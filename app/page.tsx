@@ -6,7 +6,7 @@ import Footer from "@/app/components/Footer";
 
 export default function Home() {
   return (
-    <div className="bg-white">
+    <div className="bg-white snap-y snap-proximity h-screen overflow-y-scroll">
       <Header />
       <main className="relative isolate">
         {/* Background gradient */}
@@ -22,13 +22,13 @@ export default function Home() {
             }}
           />
         </div>
-        <div className="flex min-h-screen flex-col items-center justify-center p-8 text-center">
+        <div className="flex min-h-screen flex-col items-center justify-center p-8 text-center snap-start">
           <div className="max-w-2xl">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              Sluta med post-it-lappar. Samla dina projekt på ett ställe.
+              Dina projekt. Samlat. Enkelt.
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-800">
-              Alignat är det löjligt enkla verktyget för att hantera hela flödet
+              Mer tid till det du är bra på. Alignat är det enkla verktyget för att hantera hela flödet
               från offert till faktura. Precis det du behöver, inget mer.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">

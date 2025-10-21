@@ -1,6 +1,6 @@
 export default function Cta() {
   return (
-    <div className="bg-white" id="get-started">
+    <div className="bg-white min-h-screen flex items-center snap-start" id="get-started">
       <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
         <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
           Bli en av de första att testa Alignat.
