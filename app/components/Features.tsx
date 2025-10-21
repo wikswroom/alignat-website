@@ -11,24 +11,28 @@ const features = [
     description:
       "Skapa snygga offerter och fakturor direkt i appen och skicka dem till kunden med ett klick.",
     icon: DocumentTextIcon,
+    color: "bg-brand-blue", // Blå
   },
   {
     name: "Samla Allt Underlag",
     description:
       "Registrera enkelt timmar, material och utlägg. Bjud in anställda så hjälps ni åt att hålla allt uppdaterat.",
     icon: UsersIcon,
+    color: "bg-brand-cyan", // Cyan
   },
   {
     name: "Kund & Projektöversikt",
     description:
       "Full koll på alla dina kunder och deras projekt, allt på ett ställe.",
     icon: BriefcaseIcon,
+    color: "bg-brand-pink", // Pink
   },
   {
     name: "Export för Bokföring",
     description:
       "Exportera underlag i PDF eller Excel för din redovisning.",
     icon: DocumentChartBarIcon,
+    color: "bg-brand-purple", // Lila
   },
 ];
 
@@ -53,7 +57,7 @@ export default function Features() {
             {features.map((feature) => (
               <div key={feature.name} className="relative pl-16">
                 <dt className="text-base font-semibold leading-7 text-gray-900">
-                  <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-brand-blue">
+                  <div className={`absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg ${feature.color}`}>
                     <feature.icon
                       className="h-6 w-6 text-white"
                       aria-hidden="true"
