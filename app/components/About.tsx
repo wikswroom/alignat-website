@@ -7,10 +7,10 @@ export default function About() {
             Byggd av en företagare, för företagare
           </h2>
           <p className="mt-6 text-lg leading-8 text-gray-600">
-            "Jag skapade Alignat efter att ha tröttnat på att hantera min fars
+            &ldquo;Jag skapade Alignat efter att ha tröttnat på att hantera min fars
             handskrivna lappar från hans hantverksjobb. Målet var att bygga
             något så enkelt att han faktiskt ville använda det. Inga krångliga
-            funktioner, bara ett smartare sätt att jobba."
+            funktioner, bara ett smartare sätt att jobba.&rdquo;
           </p>
         </div>
       </div>

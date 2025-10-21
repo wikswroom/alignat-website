@@ -1,5 +1,3 @@
-import TallyForm from "./TallyForm";
-
 export default function Cta() {
   return (
     <div className="bg-white" id="get-started">
