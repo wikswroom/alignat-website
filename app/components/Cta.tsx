@@ -14,10 +14,10 @@ export default function Cta() {
             data-tally-src="https://tally.so/embed/mYL20B?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
             loading="lazy"
             width="100%"
-            height="152"
-            frameBorder="0"
-            marginHeight="0"
-            marginWidth="0"
+            height={152}
+            frameBorder={0}
+            marginHeight={0}
+            marginWidth={0}
             title="Anmäl intresse för Alignat Beta"
           ></iframe>
         </div>
