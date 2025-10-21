@@ -9,11 +9,11 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          blue: "rgb(56, 134, 212)",
-          cyan: "rgb(144, 232, 236)",
-          pink: "rgb(222, 124, 196)",
-          purple: "rgb(160, 103, 207)",
-          gray: "rgb(240, 240, 240)",
+          blue: "#3886d4",
+          cyan: "#90e8ec",
+          pink: "#de7cc4",
+          purple: "#a067cf",
+          gray: "#f0f0f0",
         },
       },
       backgroundImage: {
