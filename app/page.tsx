@@ -6,7 +6,7 @@ import Footer from "@/app/components/Footer";
 
 export default function Home() {
   return (
-    <div className="bg-white snap-y snap-proximity h-screen overflow-y-scroll">
+    <div className="bg-white md:snap-y md:snap-proximity">
       <Header />
       <main className="relative isolate">
         {/* Background gradient */}
@@ -22,7 +22,7 @@ export default function Home() {
             }}
           />
         </div>
-        <div className="flex min-h-screen flex-col items-center justify-center p-8 text-center snap-start">
+        <div className="flex min-h-screen flex-col items-center justify-center p-8 text-center md:snap-start">
           <div className="max-w-2xl">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
               Dina projekt. Samlat. Enkelt.
