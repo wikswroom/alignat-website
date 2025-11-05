@@ -1,15 +1,17 @@
+import Link from "next/link";
+
 export default function Footer() {
   return (
     <footer className="bg-white border-t border-gray-100">
       <div className="mx-auto max-w-7xl overflow-hidden px-6 py-16 sm:py-20 lg:px-8">
         {/* Navigation Links */}
         <nav className="flex justify-center space-x-8 mb-8" aria-label="Footer">
-          <a href="/#about" className="text-sm text-gray-600 hover:text-brand-blue transition-colors">
+          <Link href="/#about" className="text-sm text-gray-600 hover:text-brand-blue transition-colors">
             Om oss
-          </a>
-          <a href="/legal" className="text-sm text-gray-600 hover:text-brand-blue transition-colors">
+          </Link>
+          <Link href="/legal" className="text-sm text-gray-600 hover:text-brand-blue transition-colors">
             Legal
-          </a>
+          </Link>
           <a href="mailto:support@alignat.se" className="text-sm text-gray-600 hover:text-brand-blue transition-colors">
             Kontakt
           </a>

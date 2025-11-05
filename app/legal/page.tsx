@@ -53,7 +53,7 @@ export default function LegalPage() {
               </h2>
               
               <p className="text-gray-700 mb-6">
-                Välkommen till Alignat! Genom att skapa ett konto och använda våra tjänster ("Tjänsten") godkänner du dessa användarvillkor.
+                Välkommen till Alignat! Genom att skapa ett konto och använda våra tjänster (&quot;Tjänsten&quot;) godkänner du dessa användarvillkor.
               </p>
 
               <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
@@ -80,7 +80,7 @@ export default function LegalPage() {
                 Tillgänglighet och Ansvarsbegränsning
               </h3>
               <p className="text-gray-700 mb-4">
-                Tjänsten tillhandahålls "i befintligt skick". Vi strävar efter högsta möjliga tillgänglighet men kan inte garantera att Tjänsten alltid kommer vara oavbruten eller fri från fel. Vi ansvarar inte för eventuella förluster som uppstår till följd av driftstopp eller tekniska fel.
+                Tjänsten tillhandahålls &quot;i befintligt skick&quot;. Vi strävar efter högsta möjliga tillgänglighet men kan inte garantera att Tjänsten alltid kommer vara oavbruten eller fri från fel. Vi ansvarar inte för eventuella förluster som uppstår till följd av driftstopp eller tekniska fel.
               </p>
               <p className="text-gray-700 mb-6">
                 I den fulla utsträckning som lagen tillåter, ska vårt totala ekonomiska ansvar gentemot dig för alla anspråk som uppstår vara begränsat till det totala belopp du betalat till oss för Tjänsten under de tolv (12) månader som föregår händelsen som gav upphov till anspråket.
@@ -122,7 +122,7 @@ export default function LegalPage() {
                   • <span className="font-bold">Rätt till tillgång:</span> Du har rätt att begära ett utdrag av all data vi har sparat om dig.
                 </li>
                 <li className="text-gray-700 pl-4">
-                  • <span className="font-bold">Rätt till radering:</span> Du har rätt att få all din data permanent borttagen ("rätten att bli glömd") genom att radera ditt konto via appens inställningar.
+                  • <span className="font-bold">Rätt till radering:</span> Du har rätt att få all din data permanent borttagen (&quot;rätten att bli glömd&quot;) genom att radera ditt konto via appens inställningar.
                 </li>
               </ul>
 
