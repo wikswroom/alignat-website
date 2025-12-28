@@ -7,32 +7,32 @@ import {
 
 const features = [
   {
-    name: "Skapa & Skicka Offert/Faktura",
+    name: "Fakturera utan att missa något",
     description:
-      "Skapa snygga offerter och fakturor direkt i appen och skicka dem till kunden med ett klick.",
+      "Lägg in tid, utlägg och tjänster löpande på jobbet. När du är klar skapar du fakturan med ett klick. Allt kommer med – inget glöms bort.",
     icon: DocumentTextIcon,
-    color: "bg-brand-blue", // Blå
+    color: "bg-brand-blue",
   },
   {
-    name: "Samla Allt Underlag",
+    name: "Färdigt löneunderlag",
     description:
-      "Registrera enkelt timmar, material och utlägg. Bjud in anställda så hjälps ni åt att hålla allt uppdaterat.",
+      "Slipp lösa lappar. Rapportera närvaro, semester, VAB och övrigt som traktamente direkt i mobilen. Du får en färdig lista att skicka till lönekontoret varje månad.",
     icon: UsersIcon,
-    color: "bg-brand-cyan", // Cyan
+    color: "bg-brand-cyan",
   },
   {
-    name: "Kund & Projektöversikt",
+    name: "Planering & Överblick",
     description:
-      "Full koll på alla dina kunder och deras projekt, allt på ett ställe.",
+      "Se vem som gör vad. Få en tydlig överblick på dina kunder och pågående jobb. Fördela arbetet enkelt och se historik per anställd direkt i appen.",
     icon: BriefcaseIcon,
-    color: "bg-brand-pink", // Pink
+    color: "bg-brand-pink",
   },
   {
-    name: "Export för Bokföring",
+    name: "Enkelt men kraftfullt",
     description:
-      "Exportera underlag i PDF eller Excel för din redovisning.",
+      "Med inbyggt stöd för ROT/RUT och omvänd moms funkar det för alla – utan krångliga inställningar. Det bara funkar.",
     icon: DocumentChartBarIcon,
-    color: "bg-brand-purple", // Lila
+    color: "bg-brand-purple",
   },
 ];
 
