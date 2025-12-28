@@ -3,10 +3,11 @@ import Features from "@/app/components/Features";
 import Cta from "@/app/components/Cta";
 import About from "@/app/components/About";
 import Footer from "@/app/components/Footer";
+import QualifySection from "@/app/components/QualifySection";
 
 export default function Home() {
   return (
-    <div className="bg-white md:snap-y md:snap-proximity">
+    <div className="bg-white">
       <Header />
       <main className="relative isolate">
         {/* Background gradient */}
@@ -22,14 +23,15 @@ export default function Home() {
             }}
           />
         </div>
-        <div className="flex min-h-screen flex-col items-center justify-center p-8 text-center md:snap-start">
+        <div className="flex min-h-[80vh] flex-col items-center justify-center p-8 text-center">
           <div className="max-w-2xl">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
               Dina projekt. Samlat. Enkelt.
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-800">
-              Mer tid till det du är bra på. Alignat är det enkla verktyget för att hantera hela flödet
-              från offert till faktura. Precis det du behöver, inget mer.
+              Alignat är för dig som driver ett litet bolag och är trött på att
+              hålla allt i huvudet. Det enkla verktyget för att hantera hela
+              flödet från offert till faktura.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <a
@@ -42,6 +44,7 @@ export default function Home() {
           </div>
         </div>
       </main>
+      <QualifySection />
       <Features />
       <Cta />
       <About />
