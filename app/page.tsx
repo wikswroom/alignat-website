@@ -4,6 +4,9 @@ import Cta from "@/app/components/Cta";
 import About from "@/app/components/About";
 import Footer from "@/app/components/Footer";
 import QualifySection from "@/app/components/QualifySection";
+import WorkflowSection from "@/app/components/WorkflowSection";
+import PricingSection from "@/app/components/PricingSection";
+import FaqSection from "@/app/components/FaqSection";
 
 export default function Home() {
   return (
@@ -26,26 +29,30 @@ export default function Home() {
         <div className="flex min-h-[80vh] flex-col items-center justify-center p-8 text-center">
           <div className="max-w-2xl">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              Dina projekt. Samlat. Enkelt.
+              Fakturering och löneunderlag – utan efterarbete.
             </h1>
-            <p className="mt-6 text-lg leading-8 text-gray-800">
-              Alignat är för dig som driver ett litet bolag och är trött på att
-              hålla allt i huvudet. Det enkla verktyget för att hantera hela
-              flödet från offert till faktura.
+            <p className="mt-6 text-xl leading-8 text-gray-900 font-medium">
+              Ett enkelt, appbaserat affärsverktyg för små projektbolag.
+            </p>
+            <p className="mt-2 text-base text-gray-600">
+              Kör parallellt med dina befintliga system. Ingen bindningstid.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <a
                 href="#get-started"
                 className="rounded-md bg-gradient-to-r from-brand-purple to-brand-blue px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:from-brand-purple/90 hover:to-brand-blue/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
               >
-                Anmäl intresse för betatest
+                Kom igång – 14 dagar utan risk
               </a>
             </div>
           </div>
         </div>
       </main>
       <QualifySection />
+      <WorkflowSection />
+      <PricingSection />
       <Features />
+      <FaqSection />
       <Cta />
       <About />
       <Footer />
