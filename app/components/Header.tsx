@@ -27,12 +27,12 @@ export default function Header() {
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-100 py-2"
-          : "bg-transparent py-4"
+          ? "bg-white shadow-sm border-b border-gray-100 py-2 lg:py-2"
+          : "bg-white/50 backdrop-blur-sm lg:bg-transparent py-3 lg:py-4"
       }`}
     >
       <nav
-        className="flex items-center justify-between p-4 lg:px-8 max-w-7xl mx-auto"
+        className="flex items-center justify-between p-3 lg:p-4 lg:px-8 max-w-7xl mx-auto"
         aria-label="Global"
       >
         {/* Logo */}
