@@ -25,14 +25,14 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 bg-white py-2 ${
         isScrolled
-          ? "bg-white shadow-sm border-b border-gray-100 py-2 lg:py-2"
-          : "bg-white/50 backdrop-blur-sm lg:bg-transparent py-3 lg:py-4"
+          ? "shadow-sm border-b border-gray-100"
+          : "border-b border-transparent"
       }`}
     >
       <nav
-        className="flex items-center justify-between p-3 lg:p-4 lg:px-8 max-w-7xl mx-auto"
+        className="flex items-center justify-between px-4 lg:px-8 max-w-7xl mx-auto"
         aria-label="Global"
       >
         {/* Logo */}
@@ -89,11 +89,11 @@ export default function Header() {
 
       {/* Mobilmeny Overlay */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 w-full h-full flex flex-col">
-          <div className="flex items-center justify-between">
+        <div className="lg:hidden fixed inset-0 z-50 bg-white">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <Link
               href="/"
-              className="-m-1.5 p-1.5 flex items-center gap-2"
+              className="flex items-center gap-2"
               onClick={() => setMobileMenuOpen(false)}
             >
               <Image
@@ -107,36 +107,34 @@ export default function Header() {
             </Link>
             <button
               type="button"
-              className="-m-2.5 rounded-md p-2.5 text-gray-700"
+              className="rounded-md p-2 text-gray-700"
               onClick={() => setMobileMenuOpen(false)}
             >
               <span className="sr-only">Stäng meny</span>
               <XMarkIcon className="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
-          <div className="mt-6 flow-root flex-1">
-            <div className="-my-6 divide-y divide-gray-500/10 h-full flex flex-col">
-              <div className="space-y-2 py-6 flex-1 flex flex-col justify-center text-center">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="-mx-3 block rounded-lg px-3 py-4 text-xl font-semibold leading-7 text-gray-900 hover:bg-gray-50"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-              </div>
-              <div className="py-6 pb-20">
+          <div className="px-4 py-6">
+            <div className="space-y-1">
+              {navigation.map((item) => (
                 <Link
-                  href="#get-started"
-                  className="-mx-3 block rounded-lg px-3 py-4 text-xl font-bold leading-7 text-white bg-brand-blue text-center shadow-lg"
+                  key={item.name}
+                  href={item.href}
+                  className="block rounded-lg px-3 py-2.5 text-base font-semibold text-gray-900 hover:bg-gray-50"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Kom igång
+                  {item.name}
                 </Link>
-              </div>
+              ))}
+            </div>
+            <div className="mt-6">
+              <Link
+                href="#get-started"
+                className="block rounded-lg px-3 py-2.5 text-base font-bold text-center text-white bg-brand-blue shadow-sm"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Kom igång
+              </Link>
             </div>
           </div>
         </div>
