@@ -18,7 +18,7 @@ export default function Header() {
   }, []);
 
   const navigation = [
-    { name: "Hur det funkar", href: "#features" },
+    { name: "Så används Alignat", href: "#features" },
     { name: "Priser", href: "#pricing" },
     { name: "FAQ", href: "#faq" },
   ];

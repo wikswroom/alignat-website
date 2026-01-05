@@ -29,10 +29,10 @@ export default function Home() {
         <div className="flex min-h-[80vh] flex-col items-center justify-center p-8 text-center">
           <div className="max-w-2xl">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              Fakturering och löneunderlag – utan efterarbete.
+              Fakturering och löneunderlag för små projektbolag – utan efterarbete.
             </h1>
             <p className="mt-6 text-xl leading-8 text-gray-900 font-medium">
-              Ett enkelt, appbaserat affärsverktyg för små projektbolag.
+              Ett enkelt, appbaserat verktyg för offert, jobb, faktura och lön.
             </p>
             <p className="mt-2 text-base text-gray-600">
               Kör parallellt med dina befintliga system. Ingen bindningstid.
