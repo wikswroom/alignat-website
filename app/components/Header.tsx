@@ -18,9 +18,9 @@ export default function Header() {
   }, []);
 
   const navigation = [
-    { name: "Så används Alignat", href: "#features" },
-    { name: "Priser", href: "#pricing" },
-    { name: "FAQ", href: "#faq" },
+    { name: "Så används Alignat", href: "/#features" },
+    { name: "Priser", href: "/#pricing" },
+    { name: "FAQ", href: "/#faq" },
   ];
 
   return (
@@ -79,7 +79,7 @@ export default function Header() {
         {/* Desktop CTA */}
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
           <Link
-            href="#get-started"
+            href="/#get-started"
             className="rounded-full bg-brand-blue px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-blue/90 transition-all"
           >
             Kom igång <span aria-hidden="true">&rarr;</span>
@@ -129,7 +129,7 @@ export default function Header() {
             </div>
             <div className="mt-6">
               <Link
-                href="#get-started"
+                href="/#get-started"
                 className="block rounded-lg px-3 py-2.5 text-base font-bold text-center text-white bg-brand-blue shadow-sm"
                 onClick={() => setMobileMenuOpen(false)}
               >

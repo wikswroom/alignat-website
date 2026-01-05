@@ -6,9 +6,6 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl overflow-hidden px-6 py-16 sm:py-20 lg:px-8">
         {/* Navigation Links */}
         <nav className="flex justify-center space-x-8 mb-8" aria-label="Footer">
-          <Link href="/#about" className="text-sm text-gray-600 hover:text-brand-blue transition-colors">
-            Om oss
-          </Link>
           <Link href="/legal" className="text-sm text-gray-600 hover:text-brand-blue transition-colors">
             Legal
           </Link>
