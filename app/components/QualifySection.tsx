@@ -35,7 +35,7 @@ export default function QualifySection() {
             </h3>
             <ul className="space-y-4">
               {[
-                "Du driver ett litet projektbaserat bolag",
+                "Du driver ett litet uppdragsbaserat bolag",
                 "Du vill att anställda enkelt rapporterar in underlag",
                 "Du vill slippa kvällsjobb med fakturor/lön",
               ].map((item, idx) => (

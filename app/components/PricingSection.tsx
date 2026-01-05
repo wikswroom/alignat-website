@@ -21,7 +21,7 @@ export default function PricingSection() {
             </h3>
             <p className="mt-6 text-base leading-7 text-gray-600">
               Allt som krävs för att driva fakturering och samla underlag i ett
-              litet projektbolag.
+              litet uppdragsbaserat bolag.
             </p>
             <div className="mt-10 flex items-center gap-x-4">
               <h4 className="flex-none text-sm font-semibold leading-6 text-brand-blue">
@@ -135,7 +135,7 @@ export default function PricingSection() {
                 De flesta företag betalar mellan 150–300 kr/månad.
             </p>
             <p className="mt-4 text-base text-gray-600 max-w-2xl mx-auto">
-                <span className="font-medium text-brand-blue">Vanligast:</span> Små projektbolag som kör Alignat parallellt med Fortnox eller annat system för att slippa dubbelarbete och få bättre överblick.
+                <span className="font-medium text-brand-blue">Vanligast:</span> Små uppdragsbaserade bolag som kör Alignat parallellt med Fortnox eller annat system för att slippa dubbelarbete och få bättre överblick.
             </p>
         </div>
       </div>
