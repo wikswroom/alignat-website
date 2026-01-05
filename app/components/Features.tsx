@@ -48,7 +48,7 @@ export default function Features() {
             Ett enklare sätt att hantera företaget
           </p>
           <p className="mt-6 text-lg leading-8 text-gray-600">
-            Från den första offerten till ett färdigt bokföringsunderlag. Alignat
+            Från planering och offert till faktura och löneunderlag. Alignat
             är byggt för att göra din vardag som företagare smidigare.
           </p>
         </div>
