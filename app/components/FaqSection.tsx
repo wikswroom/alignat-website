@@ -1,6 +1,16 @@
 export default function FaqSection() {
   const faqs = [
     {
+      question: "Är Alignat en faktureringsapp?",
+      answer:
+        "Ja. Alignat är en mobilapp för fakturering och löneunderlag, byggd för hantverkare, konsulter och serviceföretag som fakturerar per jobb. Enklare än tunga affärssystem, kraftfullare än Excel.",
+    },
+    {
+      question: "Passar Alignat för hantverkare och byggföretag?",
+      answer:
+        "Ja. Alignat är byggt för små uppdragsbaserade bolag inom bygg, hantverk, konsulttjänster och service. Allt från offert till faktura och löneunderlag på mobilen.",
+    },
+    {
       question: "Måste jag binda mig?",
       answer:
         "Nej. Alignat betalas månadsvis i förskott och kan avslutas när som helst. Du kan använda appen fram till periodens slut.",
