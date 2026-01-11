@@ -58,7 +58,7 @@ export default function Home() {
               {/* Mobil: 230px, Desktop: 280px */}
               <div className="relative w-[230px] lg:w-[280px]">
                   <Image
-                    src="/images/Al_scs_inlogg.png?v=7"
+                    src="/images/Al_scs_inlogg.png?v=8"
                     alt="Alignat inloggningsskärm"
                     width={800}
                     height={1600}
