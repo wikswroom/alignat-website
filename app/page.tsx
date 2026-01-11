@@ -7,6 +7,8 @@ import QualifySection from "@/app/components/QualifySection";
 import WorkflowSection from "@/app/components/WorkflowSection";
 import PricingSection from "@/app/components/PricingSection";
 import FaqSection from "@/app/components/FaqSection";
+import ScreenshotCarousel from "@/app/components/ScreenshotCarousel";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -26,25 +28,45 @@ export default function Home() {
             }}
           />
         </div>
-        <div className="flex min-h-[80vh] flex-col items-center justify-center p-8 text-center pt-24">
-          <div className="max-w-2xl">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-              Fakturering och löneunderlag för små företag som fakturerar per jobb
-              <span className="block mt-4">– utan efterarbete.</span>
-            </h1>
-            <p className="mt-6 text-xl leading-8 text-gray-900 font-medium">
-              Ett enkelt, appbaserat verktyg för offert, jobb, faktura och lön.
-            </p>
-            <p className="mt-2 text-base text-gray-600">
-              Kör parallellt med dina befintliga system. Ingen bindningstid.
-            </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <a
-                href="#get-started"
-                className="rounded-md bg-gradient-to-r from-brand-purple to-brand-blue px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:from-brand-purple/90 hover:to-brand-blue/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
-              >
-                Kom igång – 14 dagar utan risk
-              </a>
+        {/* Hero Section with Login Screenshot */}
+        <div className="mx-auto max-w-7xl px-4 lg:px-8 pt-28 pb-16 sm:pt-36 lg:pt-24 sm:pb-24">
+          <div className="grid grid-cols-1 gap-y-12 lg:grid-cols-2 lg:gap-x-12 lg:items-center">
+            {/* Text Content */}
+            <div className="text-center lg:text-left">
+              <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+                Fakturering och löneunderlag för små företag som fakturerar per jobb
+                <span className="block mt-4">– utan efterarbete.</span>
+              </h1>
+              <p className="mt-6 text-xl leading-8 text-gray-900 font-medium">
+                Ett enkelt, appbaserat verktyg för offert, jobb, faktura och lön.
+              </p>
+              <p className="mt-2 text-base text-gray-600">
+                Kör parallellt med dina befintliga system. Ingen bindningstid.
+              </p>
+              <div className="mt-10 flex items-center justify-center lg:justify-start gap-x-6">
+                <a
+                  href="#get-started"
+                  className="rounded-md bg-gradient-to-r from-brand-purple to-brand-blue px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:from-brand-purple/90 hover:to-brand-blue/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
+                >
+                  Kom igång – 14 dagar utan risk
+                </a>
+              </div>
+            </div>
+
+            {/* Login Screenshot */}
+            <div className="flex justify-center lg:justify-end w-full">
+              {/* Mobil: 230px, Desktop: 280px */}
+              <div className="relative w-[230px] lg:w-[280px]">
+                  <Image
+                    src="/images/Al_scs_inlogg.png?v=7"
+                    alt="Alignat inloggningsskärm"
+                    width={800}
+                    height={1600}
+                    className="object-contain drop-shadow-2xl w-full h-auto"
+                    priority
+                    unoptimized
+                  />
+              </div>
             </div>
           </div>
         </div>
@@ -53,6 +75,7 @@ export default function Home() {
       <WorkflowSection />
       <PricingSection />
       <Features />
+      <ScreenshotCarousel />
       <FaqSection />
       <Cta />
       <About />
