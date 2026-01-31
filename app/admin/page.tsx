@@ -541,17 +541,17 @@ export default function AdminPage() {
     <div className="min-h-screen bg-[#f2f2ff]">
       <div className="max-w-5xl mx-auto px-4 py-10">
         <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="min-w-0 flex-1">
               <h1 className="text-2xl font-bold text-black">Admin Portal</h1>
-              <p className="text-sm text-[#8e8e93] mt-1">
+              <p className="text-sm text-[#8e8e93] mt-1 truncate">
                 {userProfile.email || firebaseUser.email}
               </p>
             </div>
             <button
               type="button"
               onClick={() => signOut(auth)}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-semibold text-black hover:bg-gray-50 transition flex items-center gap-2"
+              className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-semibold text-black hover:bg-gray-50 transition flex items-center gap-2 self-start sm:self-auto"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -616,13 +616,13 @@ export default function AdminPage() {
                 {employees.map((employee) => (
                   <div
                     key={employee.id}
-                    className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2 text-sm"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 rounded-lg border border-gray-100 px-3 py-2 text-sm"
                   >
-                    <span className="text-black">
+                    <span className="text-black truncate min-w-0 flex-1">
                       {employee.email || "Okänd e-post"}
                     </span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[#8e8e93]">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                      <span className="text-[#8e8e93] text-xs sm:text-sm">
                         {getRoleLabel(employee.role)}
                       </span>
                       {/* Actions for staff management */}
@@ -630,7 +630,7 @@ export default function AdminPage() {
                         <button
                           type="button"
                           onClick={() => handlePromote(employee.id, employee.email)}
-                          className="text-xs text-[#0077B6] underline"
+                          className="text-xs text-[#0077B6] underline whitespace-nowrap"
                         >
                           Befordra
                         </button>
@@ -639,7 +639,7 @@ export default function AdminPage() {
                         <button
                           type="button"
                           onClick={() => handleDemote(employee.id, employee.email)}
-                          className="text-xs text-[#0077B6] underline"
+                          className="text-xs text-[#0077B6] underline whitespace-nowrap"
                         >
                           Degradera
                         </button>
@@ -650,7 +650,7 @@ export default function AdminPage() {
                           onClick={() =>
                             handleRemoveEmployee(employee.id, employee.email)
                           }
-                          className="text-xs text-[#d9534f] underline"
+                          className="text-xs text-[#d9534f] underline whitespace-nowrap"
                         >
                           Ta bort
                         </button>
