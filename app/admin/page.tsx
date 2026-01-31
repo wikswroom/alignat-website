@@ -454,6 +454,52 @@ export default function AdminPage() {
     }
   };
 
+  const handleCancelSubscription = async () => {
+    if (!userProfile?.companyId) return;
+    const confirmed = await confirmAction(
+      "Avsluta Prenumeration",
+      "Är du säker? Din prenumeration kommer att fortsätta till slutet av den nuvarande perioden, men kommer inte att förnyas.",
+    );
+    if (!confirmed) return;
+    
+    setIsProcessingStaff(true);
+    setMessage("");
+    try {
+      const cancelStripeSubscription = httpsCallable(functions, "cancelStripeSubscription");
+      await cancelStripeSubscription({ companyId: userProfile.companyId });
+      setMessage("Din prenumeration kommer att avslutas vid periodens slut.");
+      await loadCompanyData(userProfile.companyId);
+    } catch (error) {
+      console.error("Cancel subscription error:", error);
+      setMessage("Kunde inte avsluta prenumerationen.");
+    } finally {
+      setIsProcessingStaff(false);
+    }
+  };
+
+  const handleResumeSubscription = async () => {
+    if (!userProfile?.companyId) return;
+    const confirmed = await confirmAction(
+      "Återuppta Prenumeration",
+      "Vill du återuppta din prenumeration? Den kommer att förnyas automatiskt vid slutet av varje period.",
+    );
+    if (!confirmed) return;
+    
+    setIsProcessingStaff(true);
+    setMessage("");
+    try {
+      const resumeStripeSubscription = httpsCallable(functions, "resumeStripeSubscription");
+      await resumeStripeSubscription({ companyId: userProfile.companyId });
+      setMessage("Din prenumeration har återupptagits.");
+      await loadCompanyData(userProfile.companyId);
+    } catch (error) {
+      console.error("Resume subscription error:", error);
+      setMessage("Kunde inte återuppta prenumerationen.");
+    } finally {
+      setIsProcessingStaff(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (!userProfile?.companyId) {
       return;
@@ -476,6 +522,8 @@ export default function AdminPage() {
   };
 
   const canDelete = !["active", "trialing"].includes(currentStatus);
+  const canCancel = ["active", "trialing"].includes(currentStatus);
+  const canResume = currentStatus === "cancelling";
 
   if (isLoading) {
     return (
@@ -538,11 +586,14 @@ export default function AdminPage() {
               type="button"
               onClick={handleOpenPortal}
               disabled={isOpeningPortal}
-              className="rounded-lg bg-[#0077B6] text-white font-semibold px-4 py-3 hover:bg-[#0067a1] transition disabled:opacity-60"
+              className="rounded-lg bg-[#0077B6] text-white font-semibold px-4 py-3 hover:bg-[#0067a1] transition disabled:opacity-60 flex items-center gap-2"
             >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
               {isOpeningPortal
                 ? "Öppnar portal..."
-                : "Hantera Prenumeration & Fakturor"}
+                : "Hantera Betalning & Fakturor"}
             </button>
           </section>
 
@@ -701,26 +752,66 @@ export default function AdminPage() {
 
           <section className="bg-white rounded-2xl border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-black mb-4">
-              Danger Zone
+              Konto & Prenumeration
             </h2>
-            <p className="text-sm text-[#8e8e93] mb-4">
-              Radera hela företagskontot och all data permanent.
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                if (!canDelete) {
-                  setMessage(
-                    "Du måste avsluta din prenumeration först.",
-                  );
-                  return;
-                }
-                setShowDeleteModal(true);
-              }}
-              className="rounded-lg border border-[#d9534f] text-[#d9534f] font-semibold px-4 py-3 hover:bg-[#fde8e8] transition"
-            >
-              Radera konto & all data
-            </button>
+            
+            <div className="flex flex-col items-center gap-3 max-w-sm mx-auto">
+              {canCancel && (
+                <button
+                  type="button"
+                  onClick={handleCancelSubscription}
+                  className="w-full rounded-lg border border-[#d9534f] text-[#d9534f] font-semibold px-4 py-3 hover:bg-[#fde8e8] transition flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Avsluta Prenumeration
+                </button>
+              )}
+
+              {canResume && (
+                <button
+                  type="button"
+                  onClick={handleResumeSubscription}
+                  className="w-full rounded-lg border border-[#5cb85c] text-[#5cb85c] font-semibold px-4 py-3 hover:bg-[#f0fdf4] transition flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Återuppta Prenumeration
+                </button>
+              )}
+              
+              <button
+                type="button"
+                onClick={() => {
+                  if (!canDelete) {
+                    setMessage(
+                      "För att radera kontot måste du först avsluta prenumerationen.",
+                    );
+                    return;
+                  }
+                  setShowDeleteModal(true);
+                }}
+                disabled={!canDelete}
+                className={`w-full rounded-lg border font-semibold px-4 py-3 transition flex items-center justify-center gap-2 ${
+                  canDelete 
+                    ? "border-[#d9534f] text-[#d9534f] hover:bg-[#fde8e8]" 
+                    : "border-gray-300 text-gray-400 bg-gray-50 cursor-not-allowed"
+                }`}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Radera Konto & All Data
+              </button>
+              
+              {!canDelete && (
+                <p className="text-xs text-[#8e8e93] text-center">
+                  För att radera kontot måste du först avsluta prenumerationen.
+                </p>
+              )}
+            </div>
           </section>
         </div>
       </div>
