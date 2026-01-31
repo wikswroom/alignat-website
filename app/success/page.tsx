@@ -8,13 +8,26 @@ export default function SuccessPage() {
     // Hämta session_id från URL query parameters
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('session_id');
+    const isWebReturn = urlParams.get('web') === '1';
     
     // Bygg deep link med session_id
     const deepLink = sessionId 
       ? `alignat://payment/success?session_id=${sessionId}`
       : 'alignat://payment/success';
-    
-    window.location.href = deepLink;
+
+    if (!isWebReturn) {
+      // För app-flöde: försök öppna appen via deep link.
+      window.location.href = deepLink;
+    }
+
+    // För webb: fallback till admin om vi stannar kvar i webbläsaren.
+    const fallbackTimer = window.setTimeout(() => {
+      window.location.href = '/admin';
+    }, 1200);
+
+    return () => {
+      window.clearTimeout(fallbackTimer);
+    };
   }, []);
 
   return (
@@ -27,7 +40,9 @@ export default function SuccessPage() {
         className="mb-8"
       />
       <h1 className="text-3xl font-bold text-gray-900 mb-4">Tack!</h1>
-      <p className="text-lg text-gray-600 mb-8">Vi skickar dig tillbaka till appen...</p>
+      <p className="text-lg text-gray-600 mb-8">
+        Vi skickar dig tillbaka till appen eller admin-portalen...
+      </p>
       
       {/* Spinner med Alignat färger */}
       <div className="relative w-12 h-12 mb-12">
@@ -38,11 +53,18 @@ export default function SuccessPage() {
       {/* Fallback länk */}
       <p className="text-sm text-gray-500 text-center max-w-md">
         Om du inte skickas tillbaka automatiskt,{' '}
-        <a 
-          href="alignat://payment/success" 
+        <a
+          href="/admin"
           className="text-brand-blue hover:text-brand-purple underline font-medium"
         >
-          klicka här för att återvända till appen
+          gå till admin-portalen
+        </a>
+        {' '}eller{' '}
+        <a
+          href="alignat://payment/success"
+          className="text-brand-blue hover:text-brand-purple underline font-medium"
+        >
+          öppna appen
         </a>.
       </p>
     </div>

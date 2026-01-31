@@ -45,3 +45,12 @@ next-env.d.ts
 
 # Custom
 PLAN.md
+temp_login/AuthScreen.js
+temp_login/ForgotPasswordScreen.js
+temp_login/index.js
+.gitignore
+temp_login/InviteEmployeeScreen.js
+temp_login/ManageAccountScreen.js
+.gitignore
+.gitignore
+temp_login/VerifyEmailScreen.js

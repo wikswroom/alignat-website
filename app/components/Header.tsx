@@ -77,7 +77,13 @@ export default function Header() {
         </div>
 
         {/* Desktop CTA */}
-        <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+        <div className="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-4">
+          <Link
+            href="/login"
+            className="text-sm font-semibold text-gray-900 hover:text-brand-blue transition-colors"
+          >
+            Logga in
+          </Link>
           <Link
             href="/#get-started"
             className="rounded-full bg-brand-blue px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-blue/90 transition-all"
@@ -127,7 +133,14 @@ export default function Header() {
                 </Link>
               ))}
             </div>
-            <div className="mt-6">
+            <div className="mt-6 space-y-3">
+              <Link
+                href="/login"
+                className="block rounded-lg px-3 py-2.5 text-base font-semibold text-center text-gray-900 border border-gray-200"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Logga in
+              </Link>
               <Link
                 href="/#get-started"
                 className="block rounded-lg px-3 py-2.5 text-base font-bold text-center text-white bg-brand-blue shadow-sm"
