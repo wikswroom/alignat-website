@@ -116,8 +116,8 @@ export default function AdminPage() {
     const usersQuery = query(usersRef, where("companyId", "==", companyId));
     const snapshot = await getDocs(usersQuery);
     const list = snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
       ...(docSnap.data() as Employee),
+      id: docSnap.id,
     }));
     setEmployees(list);
   };
@@ -136,8 +136,8 @@ export default function AdminPage() {
     );
     const snapshot = await getDocs(invitesQuery);
     const list = snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
       ...(docSnap.data() as Invite),
+      id: docSnap.id,
     }));
     setInvites(list);
   };
