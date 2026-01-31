@@ -23,6 +23,7 @@ type CompanyData = {
   subscriptionEndsAt?: { seconds?: number };
   trialEndsAt?: { seconds?: number };
   stripeSubscriptionId?: string;
+  stripeCustomerId?: string; // Finns om användaren har kopplat betalmetod
 };
 
 type UserProfile = {
@@ -68,6 +69,7 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [isOpeningPortal, setIsOpeningPortal] = useState(false); // UI feedback for portal launch
+  const [isActivatingSubscription, setIsActivatingSubscription] = useState(false); // UI feedback for checkout
   const [isProcessingStaff, setIsProcessingStaff] = useState(false); // Overlay for staff actions
   const [message, setMessage] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -244,6 +246,15 @@ export default function AdminPage() {
       subscriptionEndsAt &&
       subscriptionEndsAt < now);
 
+  // Har användaren kopplat betalmetod till Stripe?
+  const hasStripeConnection = !!company?.stripeCustomerId;
+
+  // Kan användaren bjuda in anställda?
+  // Kräver Stripe-koppling OCH aktiv/trialing/cancelling status
+  const canInvite =
+    hasStripeConnection &&
+    ["active", "trialing", "cancelling"].includes(currentStatus);
+
   const nextPaymentText =
     currentStatus === "cancelling"
       ? `Avslutas ${formatDate(subscriptionEndsAtSeconds)}`
@@ -283,6 +294,39 @@ export default function AdminPage() {
       console.error("Portal error:", error);
       setMessage("Kunde inte öppna portalen.");
       setIsOpeningPortal(false);
+    }
+  };
+
+  // Aktivera prenumeration för nya användare utan Stripe-koppling
+  const handleActivateSubscription = async () => {
+    if (!userProfile?.companyId || !firebaseUser) {
+      setMessage("Saknar användarinformation.");
+      return;
+    }
+    setMessage("");
+    setIsActivatingSubscription(true);
+    try {
+      // Anropa Cloud Function för Stripe Checkout
+      const createCheckoutSession = httpsCallable(
+        functions,
+        "createStripeCheckoutSession",
+      );
+      const result = await createCheckoutSession({
+        userId: userProfile.companyId, // companyId är samma som userId för superadmin
+        email: userProfile.email || firebaseUser.email,
+        source: "web", // Markera att detta är från webben
+      });
+      const url = (result.data as { url?: string })?.url;
+      if (!url) {
+        setMessage("Kunde inte starta betalning.");
+        setIsActivatingSubscription(false);
+        return;
+      }
+      window.location.href = url;
+    } catch (error) {
+      console.error("Checkout error:", error);
+      setMessage("Kunde inte starta betalning.");
+      setIsActivatingSubscription(false);
     }
   };
 
@@ -523,8 +567,9 @@ export default function AdminPage() {
   };
 
   const canDelete = !["active", "trialing"].includes(currentStatus);
-  const canCancel = ["active", "trialing"].includes(currentStatus);
-  const canResume = currentStatus === "cancelling";
+  // Avsluta/Återuppta kräver Stripe-koppling
+  const canCancel = hasStripeConnection && ["active", "trialing"].includes(currentStatus);
+  const canResume = hasStripeConnection && currentStatus === "cancelling";
 
   if (isLoading) {
     return (
@@ -583,19 +628,42 @@ export default function AdminPage() {
             <h2 className="text-lg font-semibold text-black mb-4">
               Betalning
             </h2>
-            <button
-              type="button"
-              onClick={handleOpenPortal}
-              disabled={isOpeningPortal}
-              className="rounded-lg bg-[#0077B6] text-white font-semibold px-4 py-3 hover:bg-[#0067a1] transition disabled:opacity-60 flex items-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-              </svg>
-              {isOpeningPortal
-                ? "Öppnar portal..."
-                : "Hantera Betalning & Fakturor"}
-            </button>
+            {hasStripeConnection ? (
+              // Användaren har Stripe-koppling → visa Portal-knapp
+              <button
+                type="button"
+                onClick={handleOpenPortal}
+                disabled={isOpeningPortal}
+                className="rounded-lg bg-[#0077B6] text-white font-semibold px-4 py-3 hover:bg-[#0067a1] transition disabled:opacity-60 flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                {isOpeningPortal
+                  ? "Öppnar portal..."
+                  : "Hantera Betalning & Fakturor"}
+              </button>
+            ) : (
+              // Användaren saknar Stripe-koppling → visa Checkout-knapp
+              <div>
+                <button
+                  type="button"
+                  onClick={handleActivateSubscription}
+                  disabled={isActivatingSubscription}
+                  className="rounded-lg bg-[#0077B6] text-white font-semibold px-4 py-3 hover:bg-[#0067a1] transition disabled:opacity-60 flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {isActivatingSubscription
+                    ? "Startar betalning..."
+                    : "Aktivera Prenumeration"}
+                </button>
+                <p className="text-xs text-[#8e8e93] mt-2">
+                  Du skickas till Stripe för att lägga till betalmetod.
+                </p>
+              </div>
+            )}
           </section>
 
           <section className="bg-white rounded-2xl border border-gray-100 p-6">
@@ -703,51 +771,66 @@ export default function AdminPage() {
                 Bjud in anställd
               </label>
               
-              <div className="mb-3 bg-[#f2f2ff] border border-gray-200 rounded-lg px-4 py-3 flex items-start gap-3">
-                <svg className="w-5 h-5 text-[#0077B6] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div className="flex-1">
-                  <p className="text-sm text-[#0077B6] font-medium mb-1">
-                    Så här aktiverar den inbjudna sitt konto:
+              {canInvite ? (
+                // Användaren kan bjuda in anställda
+                <>
+                  <div className="mb-3 bg-[#f2f2ff] border border-gray-200 rounded-lg px-4 py-3 flex items-start gap-3">
+                    <svg className="w-5 h-5 text-[#0077B6] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div className="flex-1">
+                      <p className="text-sm text-[#0077B6] font-medium mb-1">
+                        Så här aktiverar den inbjudna sitt konto:
+                      </p>
+                      <p className="text-xs text-[#8e8e93] leading-relaxed">
+                        Den inbjudna måste ladda ner Alignat-appen och skapa ett konto med samma e-postadress. 
+                        Välj sedan <span className="font-medium">"Jag har blivit inbjuden"</span> vid registrering för att aktivera kontot.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <input
+                      type="email"
+                      value={inviteEmail}
+                      onChange={(event) => setInviteEmail(event.target.value)}
+                      className="flex-1 rounded-lg border border-gray-200 px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
+                      placeholder="e-post@foretag.se"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleInvite}
+                      disabled={isSendingInvite}
+                      className="rounded-lg border border-[#0077B6] text-[#0077B6] font-semibold px-4 py-3 hover:bg-[#f2f7ff] transition disabled:opacity-60 active:scale-95"
+                    >
+                      {isSendingInvite ? (
+                        <span className="flex items-center gap-2">
+                          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          Skickar...
+                        </span>
+                      ) : (
+                        "Skicka inbjudan"
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-xs text-[#8e8e93] mt-2">
+                    En prenumerationsuppdatering görs automatiskt för nya unika anställda.
                   </p>
-                  <p className="text-xs text-[#8e8e93] leading-relaxed">
-                    Den inbjudna måste ladda ner Alignat-appen och skapa ett konto med samma e-postadress. 
-                    Välj sedan <span className="font-medium">"Jag har blivit inbjuden"</span> vid registrering för att aktivera kontot.
+                </>
+              ) : (
+                // Användaren kan INTE bjuda in anställda - visa låst meddelande
+                <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 flex items-start gap-3">
+                  <svg className="w-5 h-5 text-[#8e8e93] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <p className="text-sm text-[#8e8e93]">
+                    Du måste aktivera din prenumeration innan du kan bjuda in anställda.
                   </p>
                 </div>
-              </div>
-              
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <input
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(event) => setInviteEmail(event.target.value)}
-                  className="flex-1 rounded-lg border border-gray-200 px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
-                  placeholder="e-post@foretag.se"
-                />
-                <button
-                  type="button"
-                  onClick={handleInvite}
-                  disabled={isSendingInvite}
-                  className="rounded-lg border border-[#0077B6] text-[#0077B6] font-semibold px-4 py-3 hover:bg-[#f2f7ff] transition disabled:opacity-60 active:scale-95"
-                >
-                  {isSendingInvite ? (
-                    <span className="flex items-center gap-2">
-                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Skickar...
-                    </span>
-                  ) : (
-                    "Skicka inbjudan"
-                  )}
-                </button>
-              </div>
-              <p className="text-xs text-[#8e8e93] mt-2">
-                En prenumerationsuppdatering görs automatiskt för nya unika anställda.
-              </p>
+              )}
             </div>
           </section>
 
