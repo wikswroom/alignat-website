@@ -291,6 +291,14 @@ export default function AdminPage() {
       setMessage("Skriv en giltig e-postadress.");
       return;
     }
+    
+    // Enkel email-validering på klientsidan
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(trimmed)) {
+      setMessage("Ogiltig e-postadress. Kontrollera formatet.");
+      return;
+    }
+    
     setIsSendingInvite(true);
     setMessage("");
     try {
@@ -300,13 +308,40 @@ export default function AdminPage() {
         emails: [trimmed],
         companyId: userProfile.companyId,
       });
-      const responseMessage = (result.data as { message?: string })?.message;
-      setMessage(responseMessage || "Inbjudan skickad.");
+      const fullResponse = result.data as { message?: string; success?: boolean };
+      
+      // Visa backend-meddelande.
+      const responseMessage = fullResponse?.message || "";
+      
+      // Kolla om backend returnerade "Ogiltiga"
+      if (responseMessage.includes("Ogiltiga:")) {
+        setMessage("Ogiltig e-postadress. Kontrollera formatet.");
+      } else if (responseMessage.toLowerCase().includes("inga nya") || 
+          responseMessage.includes("redan")) {
+        setMessage(
+          "Inbjudan kunde inte skickas. Användaren finns redan, är redan inbjuden, " +
+          "eller så har du nyligen bjudit in samma person (vänta 1-2 minuter och försök igen)."
+        );
+      } else if (responseMessage.includes("skickad")) {
+        setMessage("Inbjudan skickad!");
+      } else if (responseMessage) {
+        setMessage(responseMessage);
+      } else {
+        setMessage("Inbjudan skickad!");
+      }
+      
       setInviteEmail("");
+      
+      // Ge Firestore lite tid att synca innan reload
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       await loadInvites(userProfile.companyId);
-    } catch (error) {
+      await loadEmployees(userProfile.companyId);
+    } catch (error: any) {
       console.error("Invite error:", error);
-      setMessage("Kunde inte skicka inbjudan.");
+      // Visa Firebase error om möjligt.
+      const errorMsg = error?.message || "Kunde inte skicka inbjudan.";
+      setMessage(errorMsg);
     } finally {
       setIsSendingInvite(false);
     }
@@ -457,27 +492,26 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-[#f2f2ff]">
       <div className="max-w-5xl mx-auto px-4 py-10">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-black">Admin Portal</h1>
-            <p className="text-sm text-[#8e8e93]">
-              {userProfile.email || firebaseUser.email}
-            </p>
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-black">Admin Portal</h1>
+              <p className="text-sm text-[#8e8e93] mt-1">
+                {userProfile.email || firebaseUser.email}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => signOut(auth)}
+              className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-semibold text-black hover:bg-gray-50 transition flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Logga ut
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => signOut(auth)}
-            className="text-sm font-semibold text-[#0077B6] underline"
-          >
-            Logga ut
-          </button>
         </div>
-
-        {message && (
-          <div className="mb-6 text-sm text-[#d9534f] bg-[#fde8e8] border border-[#d9534f] rounded-lg px-3 py-2">
-            {message}
-          </div>
-        )}
 
         <div className="grid gap-6">
           <section className="bg-white rounded-2xl border border-gray-100 p-6">
@@ -514,6 +548,16 @@ export default function AdminPage() {
 
           <section className="bg-white rounded-2xl border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-black mb-4">Personal</h2>
+
+            {message && (
+              <div className={`mb-4 text-sm rounded-lg px-4 py-3 border ${
+                message.includes("kunde inte") || message.includes("vänta") 
+                  ? "text-[#d9534f] bg-[#fde8e8] border-[#d9534f]" 
+                  : "text-green-700 bg-green-50 border-green-300"
+              }`}>
+                {message}
+              </div>
+            )}
 
             <div className="mb-4">
               <p className="text-sm text-[#8e8e93] mb-2">Aktiva användare</p>
@@ -581,7 +625,9 @@ export default function AdminPage() {
                   >
                     <span className="text-black">{invite.email}</span>
                     <div className="flex items-center gap-3">
-                      <span className="text-[#8e8e93]">{invite.status}</span>
+                      <span className="text-[#8e8e93]">
+                        {invite.status === "pending" ? "Väntar på svar" : invite.status}
+                      </span>
                       <button
                         type="button"
                         onClick={() => handleDeleteInvite(invite.id, invite.email)}
@@ -604,6 +650,22 @@ export default function AdminPage() {
               <label className="block text-sm font-medium text-black mb-2">
                 Bjud in anställd
               </label>
+              
+              <div className="mb-3 bg-[#f2f2ff] border border-gray-200 rounded-lg px-4 py-3 flex items-start gap-3">
+                <svg className="w-5 h-5 text-[#0077B6] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-sm text-[#0077B6] font-medium mb-1">
+                    Så här aktiverar den inbjudna sitt konto:
+                  </p>
+                  <p className="text-xs text-[#8e8e93] leading-relaxed">
+                    Den inbjudna måste ladda ner Alignat-appen och skapa ett konto med samma e-postadress. 
+                    Välj sedan <span className="font-medium">"Jag har blivit inbjuden"</span> vid registrering för att aktivera kontot.
+                  </p>
+                </div>
+              </div>
+              
               <div className="flex flex-col gap-3 sm:flex-row">
                 <input
                   type="email"
@@ -616,14 +678,23 @@ export default function AdminPage() {
                   type="button"
                   onClick={handleInvite}
                   disabled={isSendingInvite}
-                  className="rounded-lg border border-[#0077B6] text-[#0077B6] font-semibold px-4 py-3 hover:bg-[#f2f7ff] transition disabled:opacity-60"
+                  className="rounded-lg border border-[#0077B6] text-[#0077B6] font-semibold px-4 py-3 hover:bg-[#f2f7ff] transition disabled:opacity-60 active:scale-95"
                 >
-                  {isSendingInvite ? "Skickar..." : "Skicka inbjudan"}
+                  {isSendingInvite ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Skickar...
+                    </span>
+                  ) : (
+                    "Skicka inbjudan"
+                  )}
                 </button>
               </div>
               <p className="text-xs text-[#8e8e93] mt-2">
-                En prenumerationsuppdatering görs automatiskt för nya unika
-                anställda.
+                En prenumerationsuppdatering görs automatiskt för nya unika anställda.
               </p>
             </div>
           </section>
