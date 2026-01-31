@@ -270,6 +270,7 @@ export default function AdminPage() {
         companyId: userProfile.companyId,
         // Skicka in korrekt web-return URL för Stripe Portal.
         returnUrl: `${window.location.origin}/admin`,
+        source: "web", // Markera att detta är från webben, inte appen
       });
       const url = (result.data as { url?: string })?.url;
       if (!url) {
