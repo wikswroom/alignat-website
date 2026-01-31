@@ -258,11 +258,13 @@ export default function AdminPage() {
   const nextPaymentText =
     currentStatus === "cancelling"
       ? `Avslutas ${formatDate(subscriptionEndsAtSeconds)}`
-      : currentStatus === "past_due"
-        ? "Betalning misslyckad"
-        : currentStatus === "none" && trialEndsText
-          ? `Efter provperioden ${trialEndsText}`
-          : formatDate(subscriptionDetails?.nextPaymentTimestamp || undefined);
+      : currentStatus === "canceled" || currentStatus === "expired"
+        ? "Ingen planerad"
+        : currentStatus === "past_due"
+          ? "Betalning misslyckad"
+          : currentStatus === "none" && trialEndsText
+            ? `Efter provperioden ${trialEndsText}`
+            : formatDate(subscriptionDetails?.nextPaymentTimestamp || undefined);
 
   const handleOpenPortal = async () => {
     if (!userProfile?.companyId) {
@@ -607,6 +609,17 @@ export default function AdminPage() {
           </div>
         </div>
 
+        {/* Global meddelande-ruta för alla sektioner */}
+        {message && (
+          <div className={`rounded-lg px-4 py-3 border text-sm ${
+            message.includes("kunde inte") || message.includes("vänta") || message.includes("måste")
+              ? "text-[#d9534f] bg-[#fde8e8] border-[#d9534f]" 
+              : "text-green-700 bg-green-50 border-green-300"
+          }`}>
+            {message}
+          </div>
+        )}
+
         <div className="grid gap-6">
           <section className="bg-white rounded-2xl border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-black mb-4">
@@ -668,16 +681,6 @@ export default function AdminPage() {
 
           <section className="bg-white rounded-2xl border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-black mb-4">Personal</h2>
-
-            {message && (
-              <div className={`mb-4 text-sm rounded-lg px-4 py-3 border ${
-                message.includes("kunde inte") || message.includes("vänta") 
-                  ? "text-[#d9534f] bg-[#fde8e8] border-[#d9534f]" 
-                  : "text-green-700 bg-green-50 border-green-300"
-              }`}>
-                {message}
-              </div>
-            )}
 
             <div className="mb-4">
               <p className="text-sm text-[#8e8e93] mb-2">Aktiva användare</p>
