@@ -19,9 +19,14 @@ export default function QualifySection() {
 
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl text-center mb-16">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-4">
             Passar Alignat dig?
           </h2>
+          <p className="text-lg text-gray-600 leading-relaxed">
+            Ett steg upp från Excel – utan att fastna i ett tungt system.
+            <br />
+            Alignat ger rätt nivå av stöd för fakturering, löneunderlag och planering – utan överarbete eller överpris.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-16">
@@ -57,9 +62,9 @@ export default function QualifySection() {
             </h3>
             <ul className="space-y-4">
               {[
-                "Du behöver ett komplett affärssystem",
-                "Du har komplex redovisning eller många bolag",
-                "Du vill konfigurera allt i detalj",
+                "Du behöver ett komplett affärssystem för bokföring, lager och ekonomi",
+                "Du har komplex redovisning, många bolag eller avancerade koncernflöden",
+                "Du vill kunna skräddarsy varje del av systemet i detalj",
               ].map((item, idx) => (
                 <li key={idx} className="flex gap-3 text-gray-600">
                   <XCircleIcon className="h-6 w-5 flex-none text-gray-400" />

@@ -67,7 +67,7 @@ export default function ScreenshotCarousel() {
         {/* Header */}
         <div className="mx-auto max-w-2xl text-center mb-16">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Se hur det funkar
+            Se Alignat i praktiken
           </h2>
           <p className="mt-4 text-lg text-gray-600">
             Enkelt och intuitivt – från jobb till faktura
@@ -138,7 +138,7 @@ export default function ScreenshotCarousel() {
           <div className="relative">
             {/* Bild */}
             <div className="flex justify-center mb-6">
-              <div className="relative w-64">
+              <div className="relative w-56">
                 <Image
                   src={screenshots[mobileIndex].src}
                   alt={screenshots[mobileIndex].alt}

@@ -9,7 +9,7 @@ export default function PricingSection() {
             Enkel prissättning.
           </h2>
           <p className="mt-6 text-lg leading-8 text-gray-600">
-            Betala bara för det du använder. Inga dolda avgifter.
+            Designat för små bolag – därför kostar Alignat också därefter.
           </p>
         </div>
 

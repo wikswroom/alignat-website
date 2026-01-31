@@ -80,7 +80,7 @@ export default function Header() {
         <div className="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-4">
           <Link
             href="/login"
-            className="text-sm font-semibold text-gray-900 hover:text-brand-blue transition-colors"
+            className="rounded-full border border-brand-blue px-5 py-2.5 text-sm font-semibold text-brand-blue hover:bg-brand-blue/5 transition-all"
           >
             Logga in
           </Link>
@@ -136,14 +136,14 @@ export default function Header() {
             <div className="mt-6 space-y-3">
               <Link
                 href="/login"
-                className="block rounded-lg px-3 py-2.5 text-base font-semibold text-center text-gray-900 border border-gray-200"
+                className="block rounded-full px-5 py-2.5 text-base font-semibold text-center text-brand-blue border-2 border-brand-blue hover:bg-brand-blue/5 transition-all"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Logga in
               </Link>
               <Link
                 href="/#get-started"
-                className="block rounded-lg px-3 py-2.5 text-base font-bold text-center text-white bg-brand-blue shadow-sm"
+                className="block rounded-full px-5 py-2.5 text-base font-semibold text-center text-white bg-brand-blue shadow-sm hover:bg-brand-blue/90 transition-all"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Kom igång
