@@ -54,3 +54,4 @@ temp_login/ManageAccountScreen.js
 .gitignore
 .gitignore
 temp_login/VerifyEmailScreen.js
+temp_login/StaffManagementScreen.js

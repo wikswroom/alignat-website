@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   onAuthStateChanged,
@@ -22,6 +22,7 @@ type CompanyData = {
   subscriptionStatus?: string;
   subscriptionEndsAt?: { seconds?: number };
   trialEndsAt?: { seconds?: number };
+  stripeSubscriptionId?: string;
 };
 
 type UserProfile = {
@@ -42,20 +43,54 @@ type Employee = {
   role?: string;
 };
 
+type SubscriptionDetails = {
+  nextPaymentTimestamp?: number | null;
+  status?: string;
+};
+
+type ConfirmState = {
+  title: string;
+  body: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+};
+
 export default function AdminPage() {
   const router = useRouter();
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [company, setCompany] = useState<CompanyData | null>(null);
+  const [subscriptionDetails, setSubscriptionDetails] =
+    useState<SubscriptionDetails | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [invites, setInvites] = useState<Invite[]>([]);
   const [inviteEmail, setInviteEmail] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSendingInvite, setIsSendingInvite] = useState(false);
+  const [isOpeningPortal, setIsOpeningPortal] = useState(false); // UI feedback for portal launch
+  const [isProcessingStaff, setIsProcessingStaff] = useState(false); // Overlay for staff actions
   const [message, setMessage] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteText, setDeleteText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
+
+  useEffect(() => {
+    // Återställ portal-laddning när användaren kommer tillbaka till sidan.
+    const resetPortalLoading = () => {
+      if (document.visibilityState === "visible") {
+        setIsOpeningPortal(false);
+      }
+    };
+
+    window.addEventListener("pageshow", resetPortalLoading);
+    document.addEventListener("visibilitychange", resetPortalLoading);
+
+    return () => {
+      window.removeEventListener("pageshow", resetPortalLoading);
+      document.removeEventListener("visibilitychange", resetPortalLoading);
+    };
+  }, []);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
@@ -98,12 +133,36 @@ export default function AdminPage() {
   const loadCompanyData = async (companyId?: string) => {
     if (!companyId) {
       setCompany(null);
+      setSubscriptionDetails(null);
       return;
     }
     // Hämta företagets status från Firestore.
     const companyDocRef = doc(db, "companies", companyId);
     const companyDoc = await getDoc(companyDocRef);
-    setCompany(companyDoc.exists() ? (companyDoc.data() as CompanyData) : null);
+    const companyData = companyDoc.exists()
+      ? (companyDoc.data() as CompanyData)
+      : null;
+    setCompany(companyData);
+
+    // Hämta prenumerationsdetaljer från Stripe via Cloud Function.
+    if (companyData?.stripeSubscriptionId) {
+      try {
+        const getStripeSubscription = httpsCallable(
+          functions,
+          "getStripeSubscription",
+        );
+        const result = await getStripeSubscription({
+          subscriptionId: companyData.stripeSubscriptionId,
+          companyId,
+        });
+        setSubscriptionDetails(result.data as SubscriptionDetails);
+      } catch (error) {
+        console.error("Fel vid hämtning av prenumeration:", error);
+        setSubscriptionDetails(null);
+      }
+    } else {
+      setSubscriptionDetails(null);
+    }
   };
 
   const loadEmployees = async (companyId?: string) => {
@@ -156,6 +215,13 @@ export default function AdminPage() {
     return statusMap[status || ""] || status || "Okänd";
   };
 
+  const getRoleLabel = (role?: string) => {
+    if (role === "superadmin") return "Ägare";
+    if (role === "admin") return "Admin";
+    if (role === "employee") return "Anställd";
+    return "Okänd";
+  };
+
   const formatDate = (timestamp?: number) => {
     if (!timestamp) return "N/A";
     const date = new Date(timestamp * 1000);
@@ -185,7 +251,7 @@ export default function AdminPage() {
         ? "Betalning misslyckad"
         : currentStatus === "none" && trialEndsText
           ? `Efter provperioden ${trialEndsText}`
-          : formatDate(undefined);
+          : formatDate(subscriptionDetails?.nextPaymentTimestamp || undefined);
 
   const handleOpenPortal = async () => {
     if (!userProfile?.companyId) {
@@ -193,6 +259,7 @@ export default function AdminPage() {
       return;
     }
     setMessage("");
+    setIsOpeningPortal(true); // Show loading state before redirect
     try {
       // Anropa Cloud Function för Stripe Portal.
       const createPortalSession = httpsCallable(
@@ -207,12 +274,14 @@ export default function AdminPage() {
       const url = (result.data as { url?: string })?.url;
       if (!url) {
         setMessage("Kunde inte öppna portalen.");
+        setIsOpeningPortal(false);
         return;
       }
       window.location.href = url;
     } catch (error) {
       console.error("Portal error:", error);
       setMessage("Kunde inte öppna portalen.");
+      setIsOpeningPortal(false);
     }
   };
 
@@ -240,6 +309,113 @@ export default function AdminPage() {
       setMessage("Kunde inte skicka inbjudan.");
     } finally {
       setIsSendingInvite(false);
+    }
+  };
+
+  const confirmAction = (title: string, body: string) => {
+    // Visa en egen bekräftelseruta för jämnare UI.
+    return new Promise<boolean>((resolve) => {
+      setConfirmState({
+        title,
+        body,
+        onConfirm: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
+  };
+
+  const handlePromote = async (userId: string, email?: string) => {
+    if (!userProfile?.companyId) return;
+    const confirmed = await confirmAction(
+      "Befordra",
+      `Befordra ${email || "användare"} till admin?`,
+    );
+    if (!confirmed) {
+      return;
+    }
+    setIsProcessingStaff(true);
+    setMessage("");
+    try {
+      const promoteToAdmin = httpsCallable(functions, "promoteToAdmin");
+      await promoteToAdmin({ userIdToPromote: userId });
+      await loadEmployees(userProfile.companyId);
+    } catch (error) {
+      console.error("Promote error:", error);
+      setMessage("Kunde inte befordra användaren.");
+    } finally {
+      setIsProcessingStaff(false);
+    }
+  };
+
+  const handleDemote = async (userId: string, email?: string) => {
+    if (!userProfile?.companyId) return;
+    const confirmed = await confirmAction(
+      "Degradera",
+      `Degradera ${email || "användare"} till anställd?`,
+    );
+    if (!confirmed) {
+      return;
+    }
+    setIsProcessingStaff(true);
+    setMessage("");
+    try {
+      const demoteToEmployee = httpsCallable(functions, "demoteToEmployee");
+      await demoteToEmployee({ userIdToDemote: userId });
+      await loadEmployees(userProfile.companyId);
+    } catch (error) {
+      console.error("Demote error:", error);
+      setMessage("Kunde inte degradera användaren.");
+    } finally {
+      setIsProcessingStaff(false);
+    }
+  };
+
+  const handleRemoveEmployee = async (userId: string, email?: string) => {
+    if (!userProfile?.companyId) return;
+    const confirmed = await confirmAction(
+      "Ta bort",
+      `Ta bort ${email || "användare"}?`,
+    );
+    if (!confirmed) {
+      return;
+    }
+    setIsProcessingStaff(true);
+    setMessage("");
+    try {
+      const removeEmployee = httpsCallable(functions, "removeEmployee");
+      await removeEmployee({
+        userIdToRemove: userId,
+        companyId: userProfile.companyId,
+      });
+      await loadEmployees(userProfile.companyId);
+    } catch (error) {
+      console.error("Remove employee error:", error);
+      setMessage("Kunde inte ta bort användaren.");
+    } finally {
+      setIsProcessingStaff(false);
+    }
+  };
+
+  const handleDeleteInvite = async (inviteId: string, email?: string) => {
+    if (!userProfile?.companyId) return;
+    const confirmed = await confirmAction(
+      "Ta bort inbjudan",
+      `Ta bort inbjudan till ${email || "användare"}?`,
+    );
+    if (!confirmed) {
+      return;
+    }
+    setIsProcessingStaff(true);
+    setMessage("");
+    try {
+      const deleteInvite = httpsCallable(functions, "deleteInvite");
+      await deleteInvite({ inviteId, companyId: userProfile.companyId });
+      await loadInvites(userProfile.companyId);
+    } catch (error) {
+      console.error("Delete invite error:", error);
+      setMessage("Kunde inte ta bort inbjudan.");
+    } finally {
+      setIsProcessingStaff(false);
     }
   };
 
@@ -327,9 +503,12 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={handleOpenPortal}
-              className="rounded-lg bg-[#0077B6] text-white font-semibold px-4 py-3 hover:bg-[#0067a1] transition"
+              disabled={isOpeningPortal}
+              className="rounded-lg bg-[#0077B6] text-white font-semibold px-4 py-3 hover:bg-[#0067a1] transition disabled:opacity-60"
             >
-              Hantera Prenumeration & Fakturor
+              {isOpeningPortal
+                ? "Öppnar portal..."
+                : "Hantera Prenumeration & Fakturor"}
             </button>
           </section>
 
@@ -347,9 +526,41 @@ export default function AdminPage() {
                     <span className="text-black">
                       {employee.email || "Okänd e-post"}
                     </span>
-                    <span className="text-[#8e8e93]">
-                      {employee.role || "okänd"}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[#8e8e93]">
+                        {getRoleLabel(employee.role)}
+                      </span>
+                      {/* Actions for staff management */}
+                      {employee.role === "employee" && (
+                        <button
+                          type="button"
+                          onClick={() => handlePromote(employee.id, employee.email)}
+                          className="text-xs text-[#0077B6] underline"
+                        >
+                          Befordra
+                        </button>
+                      )}
+                      {employee.role === "admin" && (
+                        <button
+                          type="button"
+                          onClick={() => handleDemote(employee.id, employee.email)}
+                          className="text-xs text-[#0077B6] underline"
+                        >
+                          Degradera
+                        </button>
+                      )}
+                      {employee.role !== "superadmin" && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleRemoveEmployee(employee.id, employee.email)
+                          }
+                          className="text-xs text-[#d9534f] underline"
+                        >
+                          Ta bort
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
                 {employees.length === 0 && (
@@ -369,7 +580,16 @@ export default function AdminPage() {
                     className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2 text-sm"
                   >
                     <span className="text-black">{invite.email}</span>
-                    <span className="text-[#8e8e93]">{invite.status}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[#8e8e93]">{invite.status}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteInvite(invite.id, invite.email)}
+                        className="text-xs text-[#d9534f] underline"
+                      >
+                        Ta bort
+                      </button>
+                    </div>
                   </div>
                 ))}
                 {invites.length === 0 && (
@@ -465,6 +685,51 @@ export default function AdminPage() {
                 className="flex-1 rounded-lg bg-[#d9534f] text-white font-semibold px-4 py-3 disabled:opacity-60"
               >
                 {isDeleting ? "Raderar..." : "Bekräfta"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isProcessingStaff && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-white rounded-xl px-6 py-4 text-black font-semibold">
+            Bearbetar...
+          </div>
+        </div>
+      )}
+
+      {confirmState && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center px-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-black mb-2">
+              {confirmState.title}
+            </h3>
+            <p className="text-sm text-[#8e8e93] mb-4">
+              {confirmState.body}
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  // Stäng modal och avbryt action.
+                  confirmState.onCancel();
+                  setConfirmState(null);
+                }}
+                className="flex-1 rounded-lg border border-gray-200 px-4 py-3 text-black font-semibold"
+              >
+                Avbryt
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  // Stäng modal och bekräfta action.
+                  confirmState.onConfirm();
+                  setConfirmState(null);
+                }}
+                className="flex-1 rounded-lg bg-[#0077B6] text-white font-semibold px-4 py-3"
+              >
+                OK
               </button>
             </div>
           </div>
