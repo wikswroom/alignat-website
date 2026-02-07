@@ -8,11 +8,12 @@ import { httpsCallable } from "firebase/functions";
 import { auth, db, functions } from "@/app/lib/firebaseClient";
 
 // Tier-konfiguration (matchar appen)
-const TIERS: Record<string, { name: string; price: number }> = {
-  grund: { name: "Grundpaket", price: 149 },
-  liten: { name: "Liten", price: 249 },
-  mellan: { name: "Mellan", price: 349 },
-  stor: { name: "Stor", price: 499 },
+// priceExkl = Stripe (exkl. moms), priceInkl = Apple (inkl. moms)
+const TIERS: Record<string, { name: string; priceExkl: number; priceInkl: number }> = {
+  grund: { name: "Grundpaket", priceExkl: 119, priceInkl: 149 },
+  liten: { name: "Liten", priceExkl: 199, priceInkl: 249 },
+  mellan: { name: "Mellan", priceExkl: 279, priceInkl: 349 },
+  stor: { name: "Stor", priceExkl: 399, priceInkl: 499 },
 };
 
 type CompanyData = {
@@ -203,11 +204,11 @@ export default function AdminPage() {
             ? `Efter provperioden ${trialEndsText}`
             : formatDate(subscriptionDetails?.nextPaymentTimestamp || undefined);
 
-  // Betalning via-text
+  // Betalning via-text (baserat på faktisk koppling, inte bara paymentProvider-fältet)
   const paymentProviderText =
     paymentProvider === "apple"
       ? "App Store"
-      : paymentProvider === "stripe"
+      : hasStripeConnection
         ? "Stripe"
         : "Ej aktiverad";
 
@@ -413,7 +414,7 @@ export default function AdminPage() {
                 <span className="text-[#8e8e93]">Plan</span>
                 <div className="text-right">
                   <span className="text-black font-semibold">
-                    {tierInfo.name} ({tierInfo.price} kr/mån)
+                    {tierInfo.name} ({isAppleUser ? tierInfo.priceInkl : tierInfo.priceExkl} kr/mån{isAppleUser ? "" : " exkl. moms"})
                   </span>
                   {/* Visa pending nedgradering */}
                   {company?.pendingTierChange && company.pendingTierChange !== currentTier && (
@@ -488,7 +489,7 @@ export default function AdminPage() {
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  {isActivatingSubscription ? "Startar betalning..." : "Aktivera Prenumeration"}
+                  {isActivatingSubscription ? "Öppnar..." : "Lägg till betalkort"}
                 </button>
                 <p className="text-xs text-[#8e8e93] mt-2">
                   Du skickas till Stripe för att lägga till betalmetod.
