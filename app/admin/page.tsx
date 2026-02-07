@@ -2,46 +2,35 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  onAuthStateChanged,
-  signOut,
-  type User,
-} from "firebase/auth";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+import { onAuthStateChanged, signOut, type User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { auth, db, functions } from "@/app/lib/firebaseClient";
 
+// Tier-konfiguration (matchar appen)
+const TIERS: Record<string, { name: string; price: number }> = {
+  grund: { name: "Grundpaket", price: 149 },
+  liten: { name: "Liten", price: 249 },
+  mellan: { name: "Mellan", price: 349 },
+  stor: { name: "Stor", price: 499 },
+};
+
 type CompanyData = {
   subscriptionStatus?: string;
+  subscriptionTier?: "grund" | "liten" | "mellan" | "stor";
+  paymentProvider?: "stripe" | "apple" | "none";
   subscriptionEndsAt?: { seconds?: number };
   trialEndsAt?: { seconds?: number };
+  pendingTierChange?: "grund" | "liten" | "mellan" | "stor";
+  pendingTierChangeDate?: { seconds?: number };
   stripeSubscriptionId?: string;
-  stripeCustomerId?: string; // Finns om användaren har kopplat betalmetod
+  stripeCustomerId?: string;
 };
 
 type UserProfile = {
   companyId?: string;
   role?: string;
   email?: string;
-};
-
-type Invite = {
-  id: string;
-  email: string;
-  status: string;
-};
-
-type Employee = {
-  id: string;
-  email?: string;
-  role?: string;
 };
 
 type SubscriptionDetails = {
@@ -63,37 +52,32 @@ export default function AdminPage() {
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [subscriptionDetails, setSubscriptionDetails] =
     useState<SubscriptionDetails | null>(null);
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [invites, setInvites] = useState<Invite[]>([]);
-  const [inviteEmail, setInviteEmail] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [isSendingInvite, setIsSendingInvite] = useState(false);
-  const [isOpeningPortal, setIsOpeningPortal] = useState(false); // UI feedback for portal launch
-  const [isActivatingSubscription, setIsActivatingSubscription] = useState(false); // UI feedback for checkout
-  const [isProcessingStaff, setIsProcessingStaff] = useState(false); // Overlay for staff actions
+  const [isOpeningPortal, setIsOpeningPortal] = useState(false);
+  const [isActivatingSubscription, setIsActivatingSubscription] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteText, setDeleteText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
 
+  // Återställ portal-laddning när användaren kommer tillbaka till sidan.
   useEffect(() => {
-    // Återställ portal-laddning när användaren kommer tillbaka till sidan.
     const resetPortalLoading = () => {
       if (document.visibilityState === "visible") {
         setIsOpeningPortal(false);
       }
     };
-
     window.addEventListener("pageshow", resetPortalLoading);
     document.addEventListener("visibilitychange", resetPortalLoading);
-
     return () => {
       window.removeEventListener("pageshow", resetPortalLoading);
       document.removeEventListener("visibilitychange", resetPortalLoading);
     };
   }, []);
 
+  // Auth guard och data-laddning
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (!user) {
@@ -120,25 +104,22 @@ export default function AdminPage() {
 
         setUserProfile(profile);
         await loadCompanyData(profile.companyId);
-        await loadEmployees(profile.companyId);
-        await loadInvites(profile.companyId);
       } catch (error) {
         console.error("Auth guard error:", error);
       } finally {
         setIsLoading(false);
       }
     });
-
     return () => unsub();
   }, [router]);
 
+  // Hämta företagsdata och prenumerationsdetaljer
   const loadCompanyData = async (companyId?: string) => {
     if (!companyId) {
       setCompany(null);
       setSubscriptionDetails(null);
       return;
     }
-    // Hämta företagets status från Firestore.
     const companyDocRef = doc(db, "companies", companyId);
     const companyDoc = await getDoc(companyDocRef);
     const companyData = companyDoc.exists()
@@ -146,13 +127,10 @@ export default function AdminPage() {
       : null;
     setCompany(companyData);
 
-    // Hämta prenumerationsdetaljer från Stripe via Cloud Function.
+    // Hämta prenumerationsdetaljer från Stripe via Cloud Function
     if (companyData?.stripeSubscriptionId) {
       try {
-        const getStripeSubscription = httpsCallable(
-          functions,
-          "getStripeSubscription",
-        );
+        const getStripeSubscription = httpsCallable(functions, "getStripeSubscription");
         const result = await getStripeSubscription({
           subscriptionId: companyData.stripeSubscriptionId,
           companyId,
@@ -167,47 +145,13 @@ export default function AdminPage() {
     }
   };
 
-  const loadEmployees = async (companyId?: string) => {
-    if (!companyId) {
-      setEmployees([]);
-      return;
-    }
-    // Hämta alla användare i företaget.
-    const usersRef = collection(db, "users");
-    const usersQuery = query(usersRef, where("companyId", "==", companyId));
-    const snapshot = await getDocs(usersQuery);
-    const list = snapshot.docs.map((docSnap) => ({
-      ...(docSnap.data() as Employee),
-      id: docSnap.id,
-    }));
-    setEmployees(list);
-  };
-
-  const loadInvites = async (companyId?: string) => {
-    if (!companyId) {
-      setInvites([]);
-      return;
-    }
-    // Hämta pending invites.
-    const invitesRef = collection(db, "invites");
-    const invitesQuery = query(
-      invitesRef,
-      where("companyId", "==", companyId),
-      where("status", "==", "pending"),
-    );
-    const snapshot = await getDocs(invitesQuery);
-    const list = snapshot.docs.map((docSnap) => ({
-      ...(docSnap.data() as Invite),
-      id: docSnap.id,
-    }));
-    setInvites(list);
-  };
-
+  // Översätt prenumerationsstatus till svenska
   const translateStatus = (status?: string) => {
     const statusMap: Record<string, string> = {
       trialing: "Provperiod",
       active: "Aktiv",
-      past_due: "Förfallen",
+      past_due: "Betalning förfallen",
+      payment_failed: "Betalning misslyckad", // Apple-specifik
       canceled: "Avslutad",
       unpaid: "Obetald",
       cancelling: "Avslutas",
@@ -217,73 +161,87 @@ export default function AdminPage() {
     return statusMap[status || ""] || status || "Okänd";
   };
 
-  const getRoleLabel = (role?: string) => {
-    if (role === "superadmin") return "Ägare";
-    if (role === "admin") return "Admin";
-    if (role === "employee") return "Anställd";
-    return "Okänd";
-  };
-
+  // Formatera datum
   const formatDate = (timestamp?: number) => {
     if (!timestamp) return "N/A";
     const date = new Date(timestamp * 1000);
     return date.toLocaleDateString("sv-SE");
   };
 
+  // Beräkna tillstånd
   const currentStatus = company?.subscriptionStatus || "none";
+  const currentTier = company?.subscriptionTier || "grund";
+  const tierInfo = TIERS[currentTier] || TIERS.grund;
+  const paymentProvider = company?.paymentProvider || "none";
+  const isAppleUser = paymentProvider === "apple";
+  const hasStripeConnection = !!company?.stripeCustomerId;
+
   const subscriptionEndsAtSeconds = company?.subscriptionEndsAt?.seconds;
   const trialEndsAtSeconds = company?.trialEndsAt?.seconds;
+  const pendingTierChangeDate = company?.pendingTierChangeDate?.seconds;
   const now = new Date();
-  const subscriptionEndsAt =
-    subscriptionEndsAtSeconds ? new Date(subscriptionEndsAtSeconds * 1000) : null;
+  const subscriptionEndsAt = subscriptionEndsAtSeconds
+    ? new Date(subscriptionEndsAtSeconds * 1000)
+    : null;
   const trialEndsText = trialEndsAtSeconds
     ? new Date(trialEndsAtSeconds * 1000).toLocaleDateString("sv-SE")
     : null;
 
   const isLapsed =
-    ["canceled", "expired", "past_due"].includes(currentStatus) ||
-    (currentStatus === "cancelling" &&
-      subscriptionEndsAt &&
-      subscriptionEndsAt < now);
+    ["canceled", "expired", "past_due", "payment_failed"].includes(currentStatus) ||
+    (currentStatus === "cancelling" && subscriptionEndsAt && subscriptionEndsAt < now);
 
-  // Har användaren kopplat betalmetod till Stripe?
-  const hasStripeConnection = !!company?.stripeCustomerId;
-
-  // Kan användaren bjuda in anställda?
-  // Kräver Stripe-koppling OCH aktiv/trialing/cancelling status
-  const canInvite =
-    hasStripeConnection &&
-    ["active", "trialing", "cancelling"].includes(currentStatus);
-
+  // Beräkna nästa betalningstext
   const nextPaymentText =
     currentStatus === "cancelling"
       ? `Avslutas ${formatDate(subscriptionEndsAtSeconds)}`
       : currentStatus === "canceled" || currentStatus === "expired"
         ? "Ingen planerad"
-        : currentStatus === "past_due"
+        : currentStatus === "past_due" || currentStatus === "payment_failed"
           ? "Betalning misslyckad"
           : currentStatus === "none" && trialEndsText
             ? `Efter provperioden ${trialEndsText}`
             : formatDate(subscriptionDetails?.nextPaymentTimestamp || undefined);
 
+  // Betalning via-text
+  const paymentProviderText =
+    paymentProvider === "apple"
+      ? "App Store"
+      : paymentProvider === "stripe"
+        ? "Stripe"
+        : "Ej aktiverad";
+
+  // Permissions
+  const canDelete = !["active", "trialing"].includes(currentStatus);
+  const canCancel = !isAppleUser && hasStripeConnection && ["active", "trialing"].includes(currentStatus);
+  const canResume = !isAppleUser && hasStripeConnection && currentStatus === "cancelling";
+
+  // Bekräftelseruta
+  const confirmAction = (title: string, body: string) => {
+    return new Promise<boolean>((resolve) => {
+      setConfirmState({
+        title,
+        body,
+        onConfirm: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
+  };
+
+  // Öppna Stripe Portal
   const handleOpenPortal = async () => {
     if (!userProfile?.companyId) {
       setMessage("Saknar företag.");
       return;
     }
     setMessage("");
-    setIsOpeningPortal(true); // Show loading state before redirect
+    setIsOpeningPortal(true);
     try {
-      // Anropa Cloud Function för Stripe Portal.
-      const createPortalSession = httpsCallable(
-        functions,
-        "createStripePortalSession",
-      );
+      const createPortalSession = httpsCallable(functions, "createStripePortalSession");
       const result = await createPortalSession({
         companyId: userProfile.companyId,
-        // Skicka in korrekt web-return URL för Stripe Portal.
         returnUrl: `${window.location.origin}/admin`,
-        source: "web", // Markera att detta är från webben, inte appen
+        source: "web",
       });
       const url = (result.data as { url?: string })?.url;
       if (!url) {
@@ -299,7 +257,7 @@ export default function AdminPage() {
     }
   };
 
-  // Aktivera prenumeration för nya användare utan Stripe-koppling
+  // Aktivera prenumeration via Stripe Checkout
   const handleActivateSubscription = async () => {
     if (!userProfile?.companyId || !firebaseUser) {
       setMessage("Saknar användarinformation.");
@@ -308,15 +266,11 @@ export default function AdminPage() {
     setMessage("");
     setIsActivatingSubscription(true);
     try {
-      // Anropa Cloud Function för Stripe Checkout
-      const createCheckoutSession = httpsCallable(
-        functions,
-        "createStripeCheckoutSession",
-      );
+      const createCheckoutSession = httpsCallable(functions, "createStripeCheckoutSession");
       const result = await createCheckoutSession({
-        userId: userProfile.companyId, // companyId är samma som userId för superadmin
+        userId: userProfile.companyId,
         email: userProfile.email || firebaseUser.email,
-        source: "web", // Markera att detta är från webben
+        source: "web",
       });
       const url = (result.data as { url?: string })?.url;
       if (!url) {
@@ -332,184 +286,16 @@ export default function AdminPage() {
     }
   };
 
-  const handleInvite = async () => {
-    const trimmed = inviteEmail.trim().toLowerCase();
-    if (!trimmed || !userProfile?.companyId) {
-      setMessage("Skriv en giltig e-postadress.");
-      return;
-    }
-    
-    // Enkel email-validering på klientsidan
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(trimmed)) {
-      setMessage("Ogiltig e-postadress. Kontrollera formatet.");
-      return;
-    }
-    
-    setIsSendingInvite(true);
-    setMessage("");
-    try {
-      // Anropa Cloud Function för inbjudningar.
-      const inviteEmployees = httpsCallable(functions, "inviteEmployees");
-      const result = await inviteEmployees({
-        emails: [trimmed],
-        companyId: userProfile.companyId,
-      });
-      const fullResponse = result.data as { message?: string; success?: boolean };
-      
-      // Visa backend-meddelande.
-      const responseMessage = fullResponse?.message || "";
-      
-      // Kolla om backend returnerade "Ogiltiga"
-      if (responseMessage.includes("Ogiltiga:")) {
-        setMessage("Ogiltig e-postadress. Kontrollera formatet.");
-      } else if (responseMessage.toLowerCase().includes("inga nya") || 
-          responseMessage.includes("redan")) {
-        setMessage(
-          "Inbjudan kunde inte skickas. Användaren finns redan, är redan inbjuden, " +
-          "eller så har du nyligen bjudit in samma person (vänta 1-2 minuter och försök igen)."
-        );
-      } else if (responseMessage.includes("skickad")) {
-        setMessage("Inbjudan skickad!");
-      } else if (responseMessage) {
-        setMessage(responseMessage);
-      } else {
-        setMessage("Inbjudan skickad!");
-      }
-      
-      setInviteEmail("");
-      
-      // Ge Firestore lite tid att synca innan reload
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      await loadInvites(userProfile.companyId);
-      await loadEmployees(userProfile.companyId);
-    } catch (error: any) {
-      console.error("Invite error:", error);
-      // Visa Firebase error om möjligt.
-      const errorMsg = error?.message || "Kunde inte skicka inbjudan.";
-      setMessage(errorMsg);
-    } finally {
-      setIsSendingInvite(false);
-    }
-  };
-
-  const confirmAction = (title: string, body: string) => {
-    // Visa en egen bekräftelseruta för jämnare UI.
-    return new Promise<boolean>((resolve) => {
-      setConfirmState({
-        title,
-        body,
-        onConfirm: () => resolve(true),
-        onCancel: () => resolve(false),
-      });
-    });
-  };
-
-  const handlePromote = async (userId: string, email?: string) => {
-    if (!userProfile?.companyId) return;
-    const confirmed = await confirmAction(
-      "Befordra",
-      `Befordra ${email || "användare"} till admin?`,
-    );
-    if (!confirmed) {
-      return;
-    }
-    setIsProcessingStaff(true);
-    setMessage("");
-    try {
-      const promoteToAdmin = httpsCallable(functions, "promoteToAdmin");
-      await promoteToAdmin({ userIdToPromote: userId });
-      await loadEmployees(userProfile.companyId);
-    } catch (error) {
-      console.error("Promote error:", error);
-      setMessage("Kunde inte befordra användaren.");
-    } finally {
-      setIsProcessingStaff(false);
-    }
-  };
-
-  const handleDemote = async (userId: string, email?: string) => {
-    if (!userProfile?.companyId) return;
-    const confirmed = await confirmAction(
-      "Degradera",
-      `Degradera ${email || "användare"} till anställd?`,
-    );
-    if (!confirmed) {
-      return;
-    }
-    setIsProcessingStaff(true);
-    setMessage("");
-    try {
-      const demoteToEmployee = httpsCallable(functions, "demoteToEmployee");
-      await demoteToEmployee({ userIdToDemote: userId });
-      await loadEmployees(userProfile.companyId);
-    } catch (error) {
-      console.error("Demote error:", error);
-      setMessage("Kunde inte degradera användaren.");
-    } finally {
-      setIsProcessingStaff(false);
-    }
-  };
-
-  const handleRemoveEmployee = async (userId: string, email?: string) => {
-    if (!userProfile?.companyId) return;
-    const confirmed = await confirmAction(
-      "Ta bort",
-      `Ta bort ${email || "användare"}?`,
-    );
-    if (!confirmed) {
-      return;
-    }
-    setIsProcessingStaff(true);
-    setMessage("");
-    try {
-      const removeEmployee = httpsCallable(functions, "removeEmployee");
-      await removeEmployee({
-        userIdToRemove: userId,
-        companyId: userProfile.companyId,
-      });
-      await loadEmployees(userProfile.companyId);
-    } catch (error) {
-      console.error("Remove employee error:", error);
-      setMessage("Kunde inte ta bort användaren.");
-    } finally {
-      setIsProcessingStaff(false);
-    }
-  };
-
-  const handleDeleteInvite = async (inviteId: string, email?: string) => {
-    if (!userProfile?.companyId) return;
-    const confirmed = await confirmAction(
-      "Ta bort inbjudan",
-      `Ta bort inbjudan till ${email || "användare"}?`,
-    );
-    if (!confirmed) {
-      return;
-    }
-    setIsProcessingStaff(true);
-    setMessage("");
-    try {
-      const deleteInvite = httpsCallable(functions, "deleteInvite");
-      await deleteInvite({ inviteId, companyId: userProfile.companyId });
-      await loadInvites(userProfile.companyId);
-    } catch (error) {
-      console.error("Delete invite error:", error);
-      setMessage("Kunde inte ta bort inbjudan.");
-    } finally {
-      setIsProcessingStaff(false);
-    }
-  };
-
+  // Avsluta prenumeration
   const handleCancelSubscription = async () => {
     if (!userProfile?.companyId) return;
     const confirmed = await confirmAction(
       "Avsluta Prenumeration",
-      "Är du säker? Din prenumeration kommer att fortsätta till slutet av den nuvarande perioden, men kommer inte att förnyas.",
+      "Är du säker? Din prenumeration kommer att fortsätta till slutet av den nuvarande perioden, men kommer inte att förnyas."
     );
     if (!confirmed) return;
-    
-    setIsProcessingStaff(true);
+
+    setIsProcessing(true);
     setMessage("");
     try {
       const cancelStripeSubscription = httpsCallable(functions, "cancelStripeSubscription");
@@ -520,19 +306,20 @@ export default function AdminPage() {
       console.error("Cancel subscription error:", error);
       setMessage("Kunde inte avsluta prenumerationen.");
     } finally {
-      setIsProcessingStaff(false);
+      setIsProcessing(false);
     }
   };
 
+  // Återuppta prenumeration
   const handleResumeSubscription = async () => {
     if (!userProfile?.companyId) return;
     const confirmed = await confirmAction(
       "Återuppta Prenumeration",
-      "Vill du återuppta din prenumeration? Den kommer att förnyas automatiskt vid slutet av varje period.",
+      "Vill du återuppta din prenumeration? Den kommer att förnyas automatiskt vid slutet av varje period."
     );
     if (!confirmed) return;
-    
-    setIsProcessingStaff(true);
+
+    setIsProcessing(true);
     setMessage("");
     try {
       const resumeStripeSubscription = httpsCallable(functions, "resumeStripeSubscription");
@@ -543,21 +330,16 @@ export default function AdminPage() {
       console.error("Resume subscription error:", error);
       setMessage("Kunde inte återuppta prenumerationen.");
     } finally {
-      setIsProcessingStaff(false);
+      setIsProcessing(false);
     }
   };
 
+  // Radera konto
   const handleDeleteAccount = async () => {
-    if (!userProfile?.companyId) {
-      return;
-    }
+    if (!userProfile?.companyId) return;
     setIsDeleting(true);
     try {
-      // Anropa Cloud Function för permanent radering.
-      const permanentlyDeleteCompanyData = httpsCallable(
-        functions,
-        "permanentlyDeleteCompanyData",
-      );
+      const permanentlyDeleteCompanyData = httpsCallable(functions, "permanentlyDeleteCompanyData");
       await permanentlyDeleteCompanyData({ companyId: userProfile.companyId });
       await signOut(auth);
       router.push("/login");
@@ -567,11 +349,6 @@ export default function AdminPage() {
       setIsDeleting(false);
     }
   };
-
-  const canDelete = !["active", "trialing"].includes(currentStatus);
-  // Avsluta/Återuppta kräver Stripe-koppling
-  const canCancel = hasStripeConnection && ["active", "trialing"].includes(currentStatus);
-  const canResume = hasStripeConnection && currentStatus === "cancelling";
 
   if (isLoading) {
     return (
@@ -587,7 +364,8 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-[#f2f2ff]">
-      <div className="max-w-5xl mx-auto px-4 py-10">
+      <div className="max-w-2xl mx-auto px-4 py-10">
+        {/* Header */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="min-w-0 flex-1">
@@ -609,40 +387,84 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Global meddelande-ruta för alla sektioner */}
+        {/* Global meddelande-ruta */}
         {message && (
-          <div className={`rounded-lg px-4 py-3 border text-sm ${
-            message.includes("kunde inte") || message.includes("vänta") || message.includes("måste")
-              ? "text-[#d9534f] bg-[#fde8e8] border-[#d9534f]" 
-              : "text-green-700 bg-green-50 border-green-300"
-          }`}>
+          <div
+            className={`rounded-lg px-4 py-3 border text-sm mb-6 ${
+              message.includes("kunde inte") || message.includes("måste")
+                ? "text-[#d9534f] bg-[#fde8e8] border-[#d9534f]"
+                : "text-green-700 bg-green-50 border-green-300"
+            }`}
+          >
             {message}
           </div>
         )}
 
         <div className="grid gap-6">
+          {/* Prenumerationsstatus */}
           <section className="bg-white rounded-2xl border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold text-black mb-4">
-              Prenumerationsstatus
-            </h2>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[#8e8e93]">Status</span>
-              <span className="text-black font-semibold">
-                {translateStatus(currentStatus)}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm mt-3">
-              <span className="text-[#8e8e93]">Nästa betalning</span>
-              <span className="text-black">{nextPaymentText}</span>
+            <h2 className="text-lg font-semibold text-black mb-4">Prenumerationsstatus</h2>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-[#8e8e93]">Status</span>
+                <span className="text-black font-semibold">{translateStatus(currentStatus)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[#8e8e93]">Plan</span>
+                <div className="text-right">
+                  <span className="text-black font-semibold">
+                    {tierInfo.name} ({tierInfo.price} kr/mån)
+                  </span>
+                  {/* Visa pending nedgradering */}
+                  {company?.pendingTierChange && company.pendingTierChange !== currentTier && (
+                    <p className="text-xs text-[#8e8e93] mt-0.5">
+                      → {TIERS[company.pendingTierChange]?.name || company.pendingTierChange} från{" "}
+                      {formatDate(pendingTierChangeDate)}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[#8e8e93]">Betalning via</span>
+                <span className="text-black">{paymentProviderText}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[#8e8e93]">Nästa betalning</span>
+                <span className="text-black">{nextPaymentText}</span>
+              </div>
             </div>
           </section>
 
+          {/* Betalning */}
           <section className="bg-white rounded-2xl border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold text-black mb-4">
-              Betalning
-            </h2>
-            {hasStripeConnection ? (
-              // Användaren har Stripe-koppling → visa Portal-knapp
+            <h2 className="text-lg font-semibold text-black mb-4">Betalning</h2>
+
+            {isAppleUser ? (
+              // Apple-användare: Visa info-box
+              <div className="bg-[#f2f2ff] border border-gray-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">📱</span>
+                  <div>
+                    <p className="font-semibold text-black mb-2">
+                      Din prenumeration hanteras via App Store
+                    </p>
+                    <p className="text-sm text-[#8e8e93] mb-3">
+                      För att ändra, uppgradera eller avsluta:
+                    </p>
+                    <ol className="text-sm text-[#8e8e93] list-decimal list-inside space-y-1">
+                      <li>Öppna Inställningar på din iPhone/iPad</li>
+                      <li>Tryck på ditt namn högst upp</li>
+                      <li>Tryck på Prenumerationer</li>
+                      <li>Välj Alignat</li>
+                    </ol>
+                    <p className="text-sm text-[#8e8e93] mt-3">
+                      Alternativt: Öppna Alignat-appen på din iOS-enhet.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : hasStripeConnection ? (
+              // Stripe-användare: Visa Portal-knapp
               <button
                 type="button"
                 onClick={handleOpenPortal}
@@ -652,12 +474,10 @@ export default function AdminPage() {
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
-                {isOpeningPortal
-                  ? "Öppnar portal..."
-                  : "Hantera Betalning & Fakturor"}
+                {isOpeningPortal ? "Öppnar portal..." : "Hantera Betalning & Fakturor"}
               </button>
             ) : (
-              // Användaren saknar Stripe-koppling → visa Checkout-knapp
+              // Ingen koppling: Visa Checkout-knapp
               <div>
                 <button
                   type="button"
@@ -668,9 +488,7 @@ export default function AdminPage() {
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  {isActivatingSubscription
-                    ? "Startar betalning..."
-                    : "Aktivera Prenumeration"}
+                  {isActivatingSubscription ? "Startar betalning..." : "Aktivera Prenumeration"}
                 </button>
                 <p className="text-xs text-[#8e8e93] mt-2">
                   Du skickas till Stripe för att lägga till betalmetod.
@@ -679,243 +497,134 @@ export default function AdminPage() {
             )}
           </section>
 
+          {/* Konto & Prenumeration (endast för Stripe-användare eller ingen koppling) */}
           <section className="bg-white rounded-2xl border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold text-black mb-4">Personal</h2>
+            <h2 className="text-lg font-semibold text-black mb-4">Konto & Prenumeration</h2>
 
-            <div className="mb-4">
-              <p className="text-sm text-[#8e8e93] mb-2">Aktiva användare</p>
-              <div className="space-y-2">
-                {employees.map((employee) => (
-                  <div
-                    key={employee.id}
-                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 rounded-lg border border-gray-100 px-3 py-2 text-sm"
-                  >
-                    <span className="text-black truncate min-w-0 flex-1">
-                      {employee.email || "Okänd e-post"}
-                    </span>
-                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                      <span className="text-[#8e8e93] text-xs sm:text-sm">
-                        {getRoleLabel(employee.role)}
-                      </span>
-                      {/* Actions for staff management */}
-                      {employee.role === "employee" && (
-                        <button
-                          type="button"
-                          onClick={() => handlePromote(employee.id, employee.email)}
-                          className="text-xs text-[#0077B6] underline whitespace-nowrap"
-                        >
-                          Befordra
-                        </button>
-                      )}
-                      {employee.role === "admin" && (
-                        <button
-                          type="button"
-                          onClick={() => handleDemote(employee.id, employee.email)}
-                          className="text-xs text-[#0077B6] underline whitespace-nowrap"
-                        >
-                          Degradera
-                        </button>
-                      )}
-                      {employee.role !== "superadmin" && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleRemoveEmployee(employee.id, employee.email)
-                          }
-                          className="text-xs text-[#d9534f] underline whitespace-nowrap"
-                        >
-                          Ta bort
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {employees.length === 0 && (
-                  <div className="text-sm text-[#8e8e93]">
-                    Inga användare hittades.
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <p className="text-sm text-[#8e8e93] mb-2">Inbjudningar</p>
-              <div className="space-y-2">
-                {invites.map((invite) => (
-                  <div
-                    key={invite.id}
-                    className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2 text-sm"
-                  >
-                    <span className="text-black">{invite.email}</span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[#8e8e93]">
-                        {invite.status === "pending" ? "Väntar på svar" : invite.status}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteInvite(invite.id, invite.email)}
-                        className="text-xs text-[#d9534f] underline"
-                      >
-                        Ta bort
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                {invites.length === 0 && (
-                  <div className="text-sm text-[#8e8e93]">
-                    Inga väntande inbjudningar.
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <label className="block text-sm font-medium text-black mb-2">
-                Bjud in anställd
-              </label>
-              
-              {canInvite ? (
-                // Användaren kan bjuda in anställda
-                <>
-                  <div className="mb-3 bg-[#f2f2ff] border border-gray-200 rounded-lg px-4 py-3 flex items-start gap-3">
-                    <svg className="w-5 h-5 text-[#0077B6] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div className="flex-1">
-                      <p className="text-sm text-[#0077B6] font-medium mb-1">
-                        Så här aktiverar den inbjudna sitt konto:
-                      </p>
-                      <p className="text-xs text-[#8e8e93] leading-relaxed">
-                        Den inbjudna måste ladda ner Alignat-appen och skapa ett konto med samma e-postadress. 
-                        Välj sedan <span className="font-medium">"Jag har blivit inbjuden"</span> vid registrering för att aktivera kontot.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <input
-                      type="email"
-                      value={inviteEmail}
-                      onChange={(event) => setInviteEmail(event.target.value)}
-                      className="flex-1 rounded-lg border border-gray-200 px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
-                      placeholder="e-post@foretag.se"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleInvite}
-                      disabled={isSendingInvite}
-                      className="rounded-lg border border-[#0077B6] text-[#0077B6] font-semibold px-4 py-3 hover:bg-[#f2f7ff] transition disabled:opacity-60 active:scale-95"
-                    >
-                      {isSendingInvite ? (
-                        <span className="flex items-center gap-2">
-                          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                          </svg>
-                          Skickar...
-                        </span>
-                      ) : (
-                        "Skicka inbjudan"
-                      )}
-                    </button>
-                  </div>
-                  <p className="text-xs text-[#8e8e93] mt-2">
-                    En prenumerationsuppdatering görs automatiskt för nya unika anställda.
-                  </p>
-                </>
-              ) : (
-                // Användaren kan INTE bjuda in anställda - visa låst meddelande
-                <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 flex items-start gap-3">
-                  <svg className="w-5 h-5 text-[#8e8e93] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            {isAppleUser ? (
+              // Apple-användare: Visa endast Radera-knapp
+              <div className="flex flex-col items-center gap-3 max-w-sm mx-auto">
+                <p className="text-sm text-[#8e8e93] text-center mb-2">
+                  För att avsluta eller ändra din prenumeration, använd App Store-inställningarna på din iOS-enhet.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!canDelete) {
+                      setMessage("För att radera kontot måste du först avsluta prenumerationen i App Store.");
+                      return;
+                    }
+                    setShowDeleteModal(true);
+                  }}
+                  disabled={!canDelete}
+                  className={`w-full rounded-lg border font-semibold px-4 py-3 transition flex items-center justify-center gap-2 ${
+                    canDelete
+                      ? "border-[#d9534f] text-[#d9534f] hover:bg-[#fde8e8]"
+                      : "border-gray-300 text-gray-400 bg-gray-50 cursor-not-allowed"
+                  }`}
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
-                  <p className="text-sm text-[#8e8e93]">
-                    Du måste aktivera din prenumeration innan du kan bjuda in anställda.
+                  Radera Konto & All Data
+                </button>
+                {!canDelete && (
+                  <p className="text-xs text-[#8e8e93] text-center">
+                    Avsluta prenumerationen i App Store innan du kan radera kontot.
                   </p>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            ) : (
+              // Stripe-användare: Visa alla knappar
+              <div className="flex flex-col items-center gap-3 max-w-sm mx-auto">
+                {canCancel && (
+                  <button
+                    type="button"
+                    onClick={handleCancelSubscription}
+                    className="w-full rounded-lg border border-[#d9534f] text-[#d9534f] font-semibold px-4 py-3 hover:bg-[#fde8e8] transition flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Avsluta Prenumeration
+                  </button>
+                )}
+
+                {canResume && (
+                  <button
+                    type="button"
+                    onClick={handleResumeSubscription}
+                    className="w-full rounded-lg border border-[#5cb85c] text-[#5cb85c] font-semibold px-4 py-3 hover:bg-[#f0fdf4] transition flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Återuppta Prenumeration
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!canDelete) {
+                      setMessage("För att radera kontot måste du först avsluta prenumerationen.");
+                      return;
+                    }
+                    setShowDeleteModal(true);
+                  }}
+                  disabled={!canDelete}
+                  className={`w-full rounded-lg border font-semibold px-4 py-3 transition flex items-center justify-center gap-2 ${
+                    canDelete
+                      ? "border-[#d9534f] text-[#d9534f] hover:bg-[#fde8e8]"
+                      : "border-gray-300 text-gray-400 bg-gray-50 cursor-not-allowed"
+                  }`}
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Radera Konto & All Data
+                </button>
+
+                {!canDelete && (
+                  <p className="text-xs text-[#8e8e93] text-center">
+                    För att radera kontot måste du först avsluta prenumerationen.
+                  </p>
+                )}
+              </div>
+            )}
           </section>
 
-          <section className="bg-white rounded-2xl border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold text-black mb-4">
-              Konto & Prenumeration
-            </h2>
-            
-            <div className="flex flex-col items-center gap-3 max-w-sm mx-auto">
-              {canCancel && (
-                <button
-                  type="button"
-                  onClick={handleCancelSubscription}
-                  className="w-full rounded-lg border border-[#d9534f] text-[#d9534f] font-semibold px-4 py-3 hover:bg-[#fde8e8] transition flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Avsluta Prenumeration
-                </button>
-              )}
-
-              {canResume && (
-                <button
-                  type="button"
-                  onClick={handleResumeSubscription}
-                  className="w-full rounded-lg border border-[#5cb85c] text-[#5cb85c] font-semibold px-4 py-3 hover:bg-[#f0fdf4] transition flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Återuppta Prenumeration
-                </button>
-              )}
-              
-              <button
-                type="button"
-                onClick={() => {
-                  if (!canDelete) {
-                    setMessage(
-                      "För att radera kontot måste du först avsluta prenumerationen.",
-                    );
-                    return;
-                  }
-                  setShowDeleteModal(true);
-                }}
-                disabled={!canDelete}
-                className={`w-full rounded-lg border font-semibold px-4 py-3 transition flex items-center justify-center gap-2 ${
-                  canDelete 
-                    ? "border-[#d9534f] text-[#d9534f] hover:bg-[#fde8e8]" 
-                    : "border-gray-300 text-gray-400 bg-gray-50 cursor-not-allowed"
-                }`}
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                Radera Konto & All Data
-              </button>
-              
-              {!canDelete && (
-                <p className="text-xs text-[#8e8e93] text-center">
-                  För att radera kontot måste du först avsluta prenumerationen.
+          {/* Info om personal-hantering */}
+          <section className="bg-[#f2f2ff] rounded-2xl border border-gray-200 p-6">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-[#0077B6] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p className="text-sm font-medium text-[#0077B6] mb-1">
+                  Hantera personal och planer i appen
                 </p>
-              )}
+                <p className="text-xs text-[#8e8e93]">
+                  Bjud in anställda, byt plan och hantera ditt team direkt i Alignat-appen.
+                </p>
+              </div>
             </div>
           </section>
         </div>
       </div>
 
+      {/* Radera-modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center px-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center px-4 z-50">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold text-black mb-2">
-              Bekräfta radering
-            </h3>
+            <h3 className="text-lg font-semibold text-black mb-2">Bekräfta radering</h3>
             <p className="text-sm text-[#8e8e93] mb-4">
               Skriv ordet RADERA för att bekräfta permanent radering.
             </p>
             <input
               type="text"
               value={deleteText}
-              onChange={(event) => setDeleteText(event.target.value)}
+              onChange={(e) => setDeleteText(e.target.value)}
               className="w-full rounded-lg border border-gray-200 px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-[#0077B6]"
               placeholder="RADERA"
             />
@@ -940,28 +649,25 @@ export default function AdminPage() {
         </div>
       )}
 
-      {isProcessingStaff && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+      {/* Processing overlay */}
+      {isProcessing && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl px-6 py-4 text-black font-semibold">
             Bearbetar...
           </div>
         </div>
       )}
 
+      {/* Bekräftelseruta */}
       {confirmState && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center px-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center px-4 z-50">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold text-black mb-2">
-              {confirmState.title}
-            </h3>
-            <p className="text-sm text-[#8e8e93] mb-4">
-              {confirmState.body}
-            </p>
+            <h3 className="text-lg font-semibold text-black mb-2">{confirmState.title}</h3>
+            <p className="text-sm text-[#8e8e93] mb-4">{confirmState.body}</p>
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => {
-                  // Stäng modal och avbryt action.
                   confirmState.onCancel();
                   setConfirmState(null);
                 }}
@@ -972,7 +678,6 @@ export default function AdminPage() {
               <button
                 type="button"
                 onClick={() => {
-                  // Stäng modal och bekräfta action.
                   confirmState.onConfirm();
                   setConfirmState(null);
                 }}

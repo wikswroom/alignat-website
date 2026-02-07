@@ -14,10 +14,10 @@ export default function SuccessPage() {
     const deepLink = sessionId 
       ? `alignat://payment/success?session_id=${sessionId}`
       : 'alignat://payment/success';
-
+    
     if (!isWebReturn) {
       // För app-flöde: försök öppna appen via deep link.
-      window.location.href = deepLink;
+    window.location.href = deepLink;
     }
 
     // För webb: fallback till admin om vi stannar kvar i webbläsaren.
@@ -60,8 +60,8 @@ export default function SuccessPage() {
           gå till admin-portalen
         </a>
         {' '}eller{' '}
-        <a
-          href="alignat://payment/success"
+        <a 
+          href="alignat://payment/success" 
           className="text-brand-blue hover:text-brand-purple underline font-medium"
         >
           öppna appen

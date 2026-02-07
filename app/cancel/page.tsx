@@ -14,10 +14,10 @@ export default function CancelPage() {
     const deepLink = sessionId 
       ? `alignat://payment/cancel?session_id=${sessionId}`
       : 'alignat://payment/cancel';
-
+    
     if (!isWebReturn) {
       // För app-flöde: försök öppna appen via deep link.
-      window.location.href = deepLink;
+    window.location.href = deepLink;
     }
 
     // För webb: fallback till admin om vi stannar kvar i webbläsaren.
@@ -60,8 +60,8 @@ export default function CancelPage() {
           gå till admin-portalen
         </a>
         {' '}eller{' '}
-        <a
-          href="alignat://payment/cancel"
+        <a 
+          href="alignat://payment/cancel" 
           className="text-brand-blue hover:text-brand-purple underline font-medium"
         >
           öppna appen
