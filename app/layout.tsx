@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -50,7 +49,6 @@ export default function RootLayout({
     <html lang="sv">
       <body className={poppins.className}>
         {children}
-        <Script src="https://tally.so/widgets/embed.js" strategy="lazyOnload" />
       </body>
     </html>
   );
