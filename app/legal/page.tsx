@@ -2,8 +2,8 @@ import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 
 export const metadata = {
-  title: "Legal - Användarvillkor & Integritetspolicy | Alignat",
-  description: "Användarvillkor, integritetspolicy och kontaktinformation för Alignat.",
+  title: "Juridiska villkor – Användarvillkor, Integritetspolicy & PUB-avtal | Alignat",
+  description: "Användarvillkor, integritetspolicy (GDPR) och personuppgiftsbiträdesavtal för Alignat. Senast uppdaterad 2026-02-08.",
 };
 
 export default function LegalPage() {
@@ -16,10 +16,13 @@ export default function LegalPage() {
           {/* Page Header */}
           <div className="text-center mb-16">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl mb-4">
-              Legal Information
+              Juridiska villkor
             </h1>
             <p className="text-lg text-gray-600">
-              Användarvillkor, integritetspolicy och kontaktinformation
+              Användarvillkor, integritetspolicy och personuppgiftsbiträdesavtal
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              Version: 2026-02-08
             </p>
           </div>
 
@@ -38,6 +41,11 @@ export default function LegalPage() {
                 </a>
               </li>
               <li>
+                <a href="#dpa" className="text-brand-blue hover:text-brand-purple underline">
+                  Personuppgiftsbiträdesavtal (PUB-avtal / DPA)
+                </a>
+              </li>
+              <li>
                 <a href="#contact" className="text-brand-blue hover:text-brand-purple underline">
                   Kontakt
                 </a>
@@ -49,41 +57,136 @@ export default function LegalPage() {
           <section id="terms" className="mb-16 scroll-mt-24">
             <div className="bg-white rounded-lg border border-gray-200 p-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                Användarvillkor
+                Användarvillkor – Alignat
               </h2>
-              
-              <p className="text-gray-700 mb-6">
-                Välkommen till Alignat! Genom att skapa ett konto och använda våra tjänster (&quot;Tjänsten&quot;) godkänner du dessa användarvillkor.
-              </p>
 
               <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
-                Tjänsten
+                1. Parter och tillämpning
               </h3>
               <p className="text-gray-700 mb-4">
-                Tjänsten tillhandahålls som en prenumerationstjänst. Specifika detaljer om prissättning och funktioner presenteras vid köptillfället och i ditt konto.
+                Dessa användarvillkor (&quot;Villkoren&quot;) gäller mellan Pinewik AB, org.nr 559160-1264, (&quot;Pinewik&quot;, &quot;vi&quot;) och den juridiska person eller enskilda näringsidkare (&quot;Kunden&quot;) som registrerar konto och använder tjänsten Alignat (&quot;Tjänsten&quot;).
+              </p>
+              <p className="text-gray-700 mb-4">
+                Tjänsten är avsedd för näringsidkare och företag, inklusive enskilda näringsidkare. Tjänsten är inte avsedd för privat bruk eller konsumentändamål.
               </p>
               <p className="text-gray-700 mb-6">
-                Vi förbehåller oss rätten att ändra våra prenumerationsavgifter. Prisändringar meddelas minst 30 dagar i förväg. Fortsatt användning av Tjänsten efter att en prisändring trätt i kraft innebär ett godkännande av de nya avgifterna. Om du inte godkänner ändringen har du rätt att avsluta din prenumeration innan den börjar gälla.
+                Genom att skapa konto intygar användaren att denne har behörighet att ingå avtal för Kundens räkning.
               </p>
 
               <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
-                Ditt Ansvar för Ekonomi och Redovisning
-              </h3>
-              <p className="text-gray-700 font-bold mb-4">
-                Alignat är ett verktyg designat för att underlätta din administration. Du som användare är alltid ensamt och fullt ansvarig för att all information du matar in, samt de underlag (såsom fakturor, offerter och rapporter) du skapar i appen, är korrekta och följer gällande lagar och regler för bokföring, skatt och redovisning.
-              </p>
-              <p className="text-gray-700 mb-6">
-                Vi, utvecklarna av Alignat, tar inget juridiskt eller ekonomiskt ansvar för hur du använder den data du producerar, och vi kan inte hållas ansvariga för eventuella felaktigheter, uteblivna intäkter eller juridiska påföljder som uppstår till följd av din användning av Tjänsten.
-              </p>
-
-              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
-                Tillgänglighet och Ansvarsbegränsning
+                2. Tjänstens karaktär och begränsningar
               </h3>
               <p className="text-gray-700 mb-4">
-                Tjänsten tillhandahålls &quot;i befintligt skick&quot;. Vi strävar efter högsta möjliga tillgänglighet men kan inte garantera att Tjänsten alltid kommer vara oavbruten eller fri från fel. Vi ansvarar inte för eventuella förluster som uppstår till följd av driftstopp eller tekniska fel.
+                Alignat är ett administrativt stödverktyg för strukturering av projekt, personal, kunder, tidrapportering, fakturering och rapportunderlag.
               </p>
               <p className="text-gray-700 mb-6">
-                I den fulla utsträckning som lagen tillåter, ska vårt totala ekonomiska ansvar gentemot dig för alla anspråk som uppstår vara begränsat till det totala belopp du betalat till oss för Tjänsten under de tolv (12) månader som föregår händelsen som gav upphov till anspråket.
+                Alignat tillhandahåller inte juridisk, skattemässig, redovisningsmässig eller annan professionell rådgivning.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                3. Ansvar för fakturor, offerter och rapporter
+              </h3>
+              <p className="text-gray-700 mb-4">
+                Fakturor, offerter, prisförslag, rapporter, exporter, sammanställningar och andra underlag som skapas i Tjänsten tillhandahålls som administrativa hjälpmedel och kan innehålla fel, brister eller ofullständigheter.
+              </p>
+              <p className="text-gray-700 mb-4">
+                Kunden ansvarar för att själv kontrollera, verifiera och godkänna allt underlag innan det:
+              </p>
+              <ul className="list-disc list-inside text-gray-700 mb-4 space-y-1 pl-4">
+                <li>skickas till kunder eller motparter</li>
+                <li>används för bokföring eller lönehantering</li>
+                <li>används för myndighetsrapportering eller skattedeklaration</li>
+                <li>ligger till grund för ekonomiska beslut</li>
+              </ul>
+              <p className="text-gray-700 mb-6">
+                Pinewik ansvarar inte för felaktiga belopp, felberäknade summor, moms- eller skattefel, eller andra felaktigheter i underlag som genererats via Tjänsten.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                4. Kundens ansvar
+              </h3>
+              <p className="text-gray-700 mb-4">
+                Kunden ansvarar för:
+              </p>
+              <ul className="list-disc list-inside text-gray-700 mb-4 space-y-1 pl-4">
+                <li>riktigheten i all information som matas in i Tjänsten</li>
+                <li>att användningen av Tjänsten sker i enlighet med tillämplig lag</li>
+                <li>att nödvändiga interna kontroller genomförs innan data används externt</li>
+                <li>att uppgifter om anställda, kunder och projekt hanteras korrekt</li>
+              </ul>
+              <p className="text-gray-700 mb-6">
+                Pinewik ansvarar inte för beslut eller åtgärder som Kunden vidtar baserat på information från Tjänsten.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                5. Tillgänglighet och förändringar
+              </h3>
+              <p className="text-gray-700 mb-4">
+                Tjänsten tillhandahålls &quot;i befintligt skick&quot;. Pinewik eftersträvar hög tillgänglighet men garanterar inte att Tjänsten är felfri eller oavbruten.
+              </p>
+              <p className="text-gray-700 mb-4">
+                Pinewik har rätt att uppdatera, ändra, förbättra eller tillfälligt stänga Tjänsten, helt eller delvis, exempelvis för underhåll eller vidareutveckling.
+              </p>
+              <p className="text-gray-700 mb-6">
+                Pinewik ansvarar inte för avbrott eller förluster som beror på omständigheter utanför Pinewiks kontroll, inklusive men inte begränsat till driftstörningar hos tredjepartsleverantörer (t.ex. Google Firebase, Apple, Stripe).
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                6. Avgifter och betalning
+              </h3>
+              <p className="text-gray-700 mb-6">
+                Avgifter och abonnemangsnivåer framgår vid köptillfället. Prisändringar meddelas minst 30 dagar i förväg. Kunden har rätt att säga upp abonnemanget innan nya priser träder i kraft.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                7. Avstängning och uppsägning
+              </h3>
+              <p className="text-gray-700 mb-4">
+                Pinewik har rätt att tillfälligt eller permanent stänga av Kundens konto vid:
+              </p>
+              <ul className="list-disc list-inside text-gray-700 mb-4 space-y-1 pl-4">
+                <li>brott mot Villkoren</li>
+                <li>försök att kringgå betalningsmodell</li>
+                <li>missbruk av Tjänsten</li>
+                <li>lämnande av oriktiga uppgifter</li>
+              </ul>
+              <p className="text-gray-700 mb-6">
+                Kunden ansvarar själv för att säkerhetskopiera sin data före uppsägning.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                8. Ansvarsbegränsning
+              </h3>
+              <p className="text-gray-700 mb-4">
+                I den fulla utsträckning som lagen tillåter ansvarar Pinewik inte för:
+              </p>
+              <ul className="list-disc list-inside text-gray-700 mb-4 space-y-1 pl-4">
+                <li>indirekta skador</li>
+                <li>utebliven vinst</li>
+                <li>förlorade affärsmöjligheter</li>
+                <li>följdskador</li>
+                <li>felaktiga utbetalningar, felaktig bokföring eller felaktig fakturering som uppstår genom användning av Tjänsten</li>
+                <li>skador som uppstår till följd av fel i fakturor, offerter, rapporter, exporter eller andra underlag från Tjänsten</li>
+              </ul>
+              <p className="text-gray-700 mb-4">
+                Pinewiks sammanlagda ekonomiska ansvar för samtliga krav under en tolvmånadersperiod är begränsat till det belopp Kunden faktiskt betalat till Pinewik under de tolv (12) månader som föregår den skadegörande händelsen.
+              </p>
+              <p className="text-gray-700 mb-6">
+                Ansvarsbegränsningen gäller inte vid uppsåt eller grov vårdslöshet.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                9. Ändringar av Villkoren
+              </h3>
+              <p className="text-gray-700 mb-6">
+                Pinewik förbehåller sig rätten att uppdatera Villkoren. Vid väsentliga ändringar krävs nytt aktivt godkännande för fortsatt användning av Tjänsten.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                10. Tillämplig lag och tvist
+              </h3>
+              <p className="text-gray-700">
+                Svensk rätt ska tillämpas. Tvist ska avgöras av svensk allmän domstol med Stockholms tingsrätt som första instans.
               </p>
             </div>
           </section>
@@ -92,45 +195,252 @@ export default function LegalPage() {
           <section id="privacy" className="mb-16 scroll-mt-24">
             <div className="bg-white rounded-lg border border-gray-200 p-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                Integritetspolicy (GDPR)
+                Integritetspolicy – Alignat (GDPR)
               </h2>
-              
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                1. Personuppgiftsansvarig och personuppgiftsbiträde
+              </h3>
+              <p className="text-gray-700 mb-4">
+                Pinewik AB, org.nr 559160-1264, är personuppgiftsbiträde för de personuppgifter som behandlas i Tjänsten Alignat på uppdrag av Kundföretag (personuppgiftsansvarig).
+              </p>
               <p className="text-gray-700 mb-6">
-                Vi värnar om din integritet och hanterar dina personuppgifter i enlighet med Dataskyddsförordningen (GDPR).
+                För kontouppgifter (inloggning etc.) är Pinewik AB personuppgiftsansvarig.
               </p>
 
               <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
-                Vilken data samlar vi in och varför?
+                2. Vilka personuppgifter behandlas?
               </h3>
               <ul className="space-y-3 mb-6">
-                <li className="text-gray-700 pl-4">
-                  • <span className="font-bold">Dina kontouppgifter:</span> Din e-postadress används för inloggning och kommunikation gällande ditt konto.
+                <li className="text-gray-700">
+                  <span className="font-semibold">Kontouppgifter:</span> E-postadress, lösenord (krypterat), inloggningshistorik
                 </li>
-                <li className="text-gray-700 pl-4">
-                  • <span className="font-bold">Din företags- och kunddata:</span> All information du matar in om ditt företag, dina anställda, dina kunder och dina projekt sparas för att appens kärnfunktioner ska fungera. Denna data är din egendom.
+                <li className="text-gray-700">
+                  <span className="font-semibold">Företagsuppgifter:</span> Företagsnamn, organisationsnummer, adress, kontaktuppgifter
+                </li>
+                <li className="text-gray-700">
+                  <span className="font-semibold">Anställdas uppgifter:</span> Namn, kontaktuppgifter, arbetstider, närvaro/frånvaro (inkl. sjuk/VAB)
+                </li>
+                <li className="text-gray-700">
+                  <span className="font-semibold">Kundregister:</span> Kunders namn, kontaktuppgifter, projektinformation
+                </li>
+                <li className="text-gray-700">
+                  <span className="font-semibold">Fakturadata:</span> Fakturanummer, belopp, mottagare, betalningsuppgifter
                 </li>
               </ul>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                3. Ändamål och rättslig grund
+              </h3>
+              <ul className="space-y-2 mb-6">
+                <li className="text-gray-700">
+                  <span className="font-semibold">Tillhandahålla Tjänstens funktioner:</span> Fullgörande av avtal
+                </li>
+                <li className="text-gray-700">
+                  <span className="font-semibold">Hantera prenumeration och betalning:</span> Fullgörande av avtal
+                </li>
+                <li className="text-gray-700">
+                  <span className="font-semibold">Skicka driftsrelaterade meddelanden:</span> Berättigat intresse
+                </li>
+                <li className="text-gray-700">
+                  <span className="font-semibold">Felsökning och förbättring:</span> Berättigat intresse
+                </li>
+              </ul>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                4. Lagringstid
+              </h3>
+              <ul className="space-y-2 mb-6">
+                <li className="text-gray-700">
+                  <span className="font-semibold">Kontodata:</span> Så länge kontot är aktivt + 30 dagar efter avslut (för backup och teknisk återställning)
+                </li>
+                <li className="text-gray-700">
+                  <span className="font-semibold">Företags- och kunddata:</span> Så länge kontot är aktivt. Raderas vid kontoborttagning.
+                </li>
+                <li className="text-gray-700">
+                  <span className="font-semibold">Betalningsdata:</span> Hanteras av Stripe/Apple. Pinewik lagrar inte kortnummer.
+                </li>
+              </ul>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                5. Underbiträden
+              </h3>
+              <p className="text-gray-700 mb-4">
+                Pinewik använder följande underleverantörer som kan behandla personuppgifter:
+              </p>
+              <ul className="space-y-2 mb-6">
+                <li className="text-gray-700">
+                  <span className="font-semibold">Google Firebase</span> (Firestore, Auth, Functions) – Datalagring, autentisering, serverlogik – EU (europe-west1)
+                </li>
+                <li className="text-gray-700">
+                  <span className="font-semibold">Stripe</span> – Betalningshantering – EU/USA (standardavtalsklausuler)
+                </li>
+                <li className="text-gray-700">
+                  <span className="font-semibold">Apple (App Store)</span> – Betalning via Apple IAP – EU/USA (standardavtalsklausuler)
+                </li>
+              </ul>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                6. Överföring utanför EU/EES
+              </h3>
               <p className="text-gray-700 mb-6">
-                Vi samlar endast in den data som är absolut nödvändig för Tjänstens funktion. Vi kommer aldrig att sälja din data till tredje part.
+                Vid överföring till tredje land används tillämpliga skyddsmekanismer enligt GDPR, såsom EU-kommissionens standardavtalsklausuler (SCC).
               </p>
 
               <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
-                Dina rättigheter
+                7. Registrerades rättigheter
               </h3>
-              <ul className="space-y-3 mb-6">
-                <li className="text-gray-700 pl-4">
-                  • <span className="font-bold">Rätt till tillgång:</span> Du har rätt att begära ett utdrag av all data vi har sparat om dig.
+              <p className="text-gray-700 mb-4">
+                Den registrerade har rätt till:
+              </p>
+              <ul className="space-y-2 mb-4">
+                <li className="text-gray-700">
+                  <span className="font-semibold">Tillgång</span> – begära utdrag av sparade uppgifter
                 </li>
-                <li className="text-gray-700 pl-4">
-                  • <span className="font-bold">Rätt till radering:</span> Du har rätt att få all din data permanent borttagen (&quot;rätten att bli glömd&quot;) genom att radera ditt konto via appens inställningar.
+                <li className="text-gray-700">
+                  <span className="font-semibold">Rättelse</span> – korrigera felaktiga uppgifter
                 </li>
+                <li className="text-gray-700">
+                  <span className="font-semibold">Radering</span> – &quot;rätten att bli glömd&quot; via kontoradering i appen
+                </li>
+                <li className="text-gray-700">
+                  <span className="font-semibold">Begränsning</span> – begränsa behandlingen under utredning
+                </li>
+                <li className="text-gray-700">
+                  <span className="font-semibold">Dataportabilitet</span> – få ut data i maskinläsbart format
+                </li>
+              </ul>
+              <p className="text-gray-700 mb-6">
+                Begäran hanteras inom 30 dagar. Kontakta: support@alignat.se
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                8. Säkerhetsåtgärder
+              </h3>
+              <ul className="list-disc list-inside text-gray-700 mb-6 space-y-1 pl-4">
+                <li>HTTPS för all kommunikation</li>
+                <li>Krypterad datalagring via Google Firebase</li>
+                <li>Åtkomstkontroll via rollbaserad behörighet (superadmin/admin/anställd)</li>
+                <li>Regelbundna säkerhetskopior</li>
+                <li>Loggning av kritiska förändringar</li>
               </ul>
 
               <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
-                Datasäkerhet
+                9. Personuppgiftsincident
               </h3>
               <p className="text-gray-700 mb-6">
-                Vi vidtar lämpliga tekniska och organisatoriska åtgärder för att skydda dina uppgifter mot förlust och obehörig åtkomst. Din data lagras säkert via Googles molntjänster (Firebase).
+                Vid personuppgiftsincident informeras berörda Kunder utan onödigt dröjsmål och senast inom 72 timmar.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                10. Kontakt
+              </h3>
+              <p className="text-gray-700 mb-2">
+                Dataskyddsfrågor: <a href="mailto:support@alignat.se" className="text-brand-blue hover:underline">support@alignat.se</a>
+              </p>
+              <p className="text-gray-700">
+                Pinewik AB, Smörgatan 102, 412 76 Göteborg
+              </p>
+            </div>
+          </section>
+
+          {/* PUB-avtal Section */}
+          <section id="dpa" className="mb-16 scroll-mt-24">
+            <div className="bg-white rounded-lg border border-gray-200 p-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">
+                Personuppgiftsbiträdesavtal (PUB-avtal / DPA)
+              </h2>
+              <p className="text-gray-700 mb-6">
+                Detta avtal gäller mellan Kundföretaget (Personuppgiftsansvarig) och Pinewik AB, org.nr 559160-1264 (Personuppgiftsbiträde), avseende behandling av personuppgifter i tjänsten Alignat.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                1. Ändamål och omfattning
+              </h3>
+              <p className="text-gray-700 mb-4">
+                Pinewik behandlar personuppgifter i Alignat uteslutande i syfte att tillhandahålla Tjänsten enligt gällande Användarvillkor. Behandlingen omfattar:
+              </p>
+              <ul className="list-disc list-inside text-gray-700 mb-6 space-y-1 pl-4">
+                <li>Lagring och visning av Kundens anställdas uppgifter</li>
+                <li>Generering av rapporter, fakturor och underlag</li>
+                <li>Tidrapportering och närvarohantering</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                2. Kategorier av personuppgifter
+              </h3>
+              <ul className="list-disc list-inside text-gray-700 mb-6 space-y-1 pl-4">
+                <li>Namn och kontaktuppgifter</li>
+                <li>Arbetstider och närvaro/frånvaro</li>
+                <li>Sjukfrånvaro och VAB (känsliga uppgifter)</li>
+                <li>Kundregister och projektuppgifter</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                3. Instruktioner
+              </h3>
+              <p className="text-gray-700 mb-6">
+                Pinewik behandlar personuppgifter endast enligt Kundens dokumenterade instruktioner, vilka primärt utgörs av Kundens användning av Tjänstens funktioner.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                4. Konfidentialitet
+              </h3>
+              <p className="text-gray-700 mb-6">
+                Pinewik säkerställer att personer med behörighet att behandla personuppgifterna har åtagit sig att iaktta konfidentialitet.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                5. Säkerhetsåtgärder
+              </h3>
+              <p className="text-gray-700 mb-4">
+                Pinewik vidtar lämpliga tekniska och organisatoriska säkerhetsåtgärder, inklusive:
+              </p>
+              <ul className="list-disc list-inside text-gray-700 mb-6 space-y-1 pl-4">
+                <li>Krypterad lagring och överföring</li>
+                <li>Rollbaserad åtkomstkontroll</li>
+                <li>Regelbundna säkerhetskopior</li>
+                <li>Loggning av dataåtkomst</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                6. Underbiträden
+              </h3>
+              <p className="text-gray-700 mb-6">
+                Pinewik har rätt att anlita underbiträden (se Integritetspolicy, avsnitt 5). Kunden informeras vid väsentliga förändringar av underbiträden.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                7. Personuppgiftsincidenter
+              </h3>
+              <p className="text-gray-700 mb-6">
+                Pinewik ska utan onödigt dröjsmål, och senast inom 72 timmar, informera Kunden vid personuppgiftsincident som berör Kundens data.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                8. Bistånd
+              </h3>
+              <p className="text-gray-700 mb-4">
+                Pinewik bistår Kunden, i skälig utsträckning, med att:
+              </p>
+              <ul className="list-disc list-inside text-gray-700 mb-6 space-y-1 pl-4">
+                <li>besvara registerutdrag och rättelsebegäran</li>
+                <li>genomföra konsekvensbedömningar</li>
+                <li>uppfylla anmälningsskyldighet vid incidenter</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                9. Radering vid upphörande
+              </h3>
+              <p className="text-gray-700 mb-6">
+                Vid avtalets upphörande raderas Kundens personuppgifter inom 30 dagar, såvida inte lag kräver fortsatt lagring. Kunden kan begära radering via appens funktion &quot;Radera konto&quot;.
+              </p>
+
+              <h3 className="text-xl font-semibold text-gray-900 mt-8 mb-4">
+                10. Revision
+              </h3>
+              <p className="text-gray-700">
+                Kunden har rätt att, med rimligt varsel, begära information om hur personuppgifter behandlas och vilka säkerhetsåtgärder som vidtagits.
               </p>
             </div>
           </section>
@@ -158,7 +468,11 @@ export default function LegalPage() {
               <div className="border-t border-gray-300 pt-6 mt-6">
                 <p className="text-sm text-gray-600">
                   <span className="font-semibold">Pinewik AB</span><br />
-                  Organisationsnummer: 559160-1264
+                  Organisationsnummer: 559160-1264<br />
+                  Smörgatan 102, 412 76 Göteborg
+                </p>
+                <p className="text-xs text-gray-500 mt-4">
+                  Senast uppdaterad: 2026-02-08
                 </p>
               </div>
             </div>
@@ -170,4 +484,3 @@ export default function LegalPage() {
     </div>
   );
 }
-
