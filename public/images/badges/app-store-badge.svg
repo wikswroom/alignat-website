@@ -7,6 +7,6 @@
   <path d="M33.08 11.61a8.85 8.85 0 0 0 2.03-6.34 9.01 9.01 0 0 0-5.83 3.02 8.43 8.43 0 0 0-2.08 6.1 7.45 7.45 0 0 0 5.88-2.78Z" fill="#fff"/>
   
   <!-- Text -->
-  <text x="52" y="17" fill="#fff" font-family="Arial, sans-serif" font-size="9" font-weight="400" letter-spacing=".3">FINNS SNART PÅ</text>
+  <text x="52" y="17" fill="#fff" font-family="Arial, sans-serif" font-size="9" font-weight="400" letter-spacing=".5">LADDA NER PÅ</text>
   <text x="52" y="38" fill="#fff" font-family="Arial, sans-serif" font-size="18" font-weight="700">App Store</text>
 </svg>
