@@ -341,6 +341,46 @@ export default function LegalPage() {
               <p className="text-gray-700">
                 Pinewik AB, Smörgatan 102, 412 76 Göteborg
               </p>
+
+              {/* ===== WEBBPLATSSPECIFIKA TILLÄGG (ej i appen) ===== */}
+              <div className="mt-10 pt-8 border-t-2 border-dashed border-gray-300">
+                <p className="text-xs text-gray-500 uppercase tracking-wide mb-4">
+                  Tillägg för webbplatsen alignat.se
+                </p>
+                
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  Cookies och webbanalys
+                </h3>
+                <p className="text-gray-700 mb-4">
+                  På webbplatsen alignat.se använder vi cookies för att analysera trafik och förbättra användarupplevelsen. 
+                  Vi använder <span className="font-semibold">Google Analytics 4</span> för att samla in anonymiserad statistik om besökare.
+                </p>
+                
+                <p className="text-gray-700 mb-4">
+                  <span className="font-semibold">Vilken data samlas in:</span>
+                </p>
+                <ul className="list-disc list-inside text-gray-700 mb-4 space-y-1 pl-4">
+                  <li>Sidvisningar och besöksmönster</li>
+                  <li>Ungefärlig geografisk plats (land/region)</li>
+                  <li>Enhetstyp och webbläsare</li>
+                  <li>Hur du hittade webbplatsen (t.ex. via sökning eller direktlänk)</li>
+                </ul>
+
+                <p className="text-gray-700 mb-4">
+                  <span className="font-semibold">Rättslig grund:</span> Samtycke. Du väljer själv om du accepterar cookies när du besöker webbplatsen. 
+                  Om du nekar laddas inga analyticscookies.
+                </p>
+
+                <p className="text-gray-700 mb-4">
+                  <span className="font-semibold">Lagringstid:</span> Google Analytics-cookies lagras i upp till 14 månader.
+                </p>
+
+                <p className="text-gray-700">
+                  <span className="font-semibold">Tredjepartsleverantör:</span> Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland. 
+                  Data kan överföras till USA enligt EU-kommissionens standardavtalsklausuler.
+                </p>
+              </div>
+              {/* ===== SLUT WEBBPLATSTILLÄGG ===== */}
             </div>
           </section>
 
@@ -472,7 +512,7 @@ export default function LegalPage() {
                   Smörgatan 102, 412 76 Göteborg
                 </p>
                 <p className="text-xs text-gray-500 mt-4">
-                  Senast uppdaterad: 2026-02-08
+                  Senast uppdaterad: 2026-03-03
                 </p>
               </div>
             </div>

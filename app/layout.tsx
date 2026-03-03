@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
+import CookieConsent from "./components/CookieConsent";
+import GoogleAnalytics from "./components/GoogleAnalytics";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -48,7 +50,9 @@ export default function RootLayout({
   return (
     <html lang="sv">
       <body className={poppins.className}>
+        <GoogleAnalytics />
         {children}
+        <CookieConsent />
       </body>
     </html>
   );
