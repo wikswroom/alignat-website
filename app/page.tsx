@@ -33,24 +33,27 @@ export default function Home() {
           <div className="grid grid-cols-1 gap-y-12 lg:grid-cols-2 lg:gap-x-12 lg:items-center">
             {/* Text Content */}
             <div className="text-center lg:text-left">
-              <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
-                Fakturering och löneunderlag för små företag som fakturerar per jobb
-                <span className="block mt-4">– utan efterarbete.</span>
-              </h1>
-              <p className="mt-6 text-xl leading-8 text-gray-900 font-medium">
-                Ett enkelt, appbaserat verktyg för offert, jobb, faktura och lön.
+              <p className="text-base font-semibold text-gray-600 mb-12">
+                Steget mellan anteckningsbok och affärssystem
               </p>
-              <p className="mt-2 text-base text-gray-600">
-                Kör parallellt med dina befintliga system. Ingen bindningstid.
+              <h1 className="text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl lg:text-6xl">
+                Slipp jaga underlag till fakturor och lön
+              </h1>
+              <p className="mt-6 text-xl leading-8 text-gray-700">
+                Samla jobb, anteckningar och personalhändelser direkt i mobilen.
+                <span className="block mt-1">När jobbet är klart är fakturan redan redo.</span>
               </p>
               <div className="mt-10 flex items-center justify-center lg:justify-start gap-x-6">
                 <a
                   href="#get-started"
-                  className="rounded-md bg-gradient-to-r from-brand-purple to-brand-blue px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:from-brand-purple/90 hover:to-brand-blue/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-blue"
+                  className="rounded-full bg-gray-900 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-gray-800"
                 >
                   Kom igång – 14 dagar utan risk
                 </a>
               </div>
+              <p className="mt-4 text-sm text-gray-500 flex items-center justify-center lg:justify-start gap-1">
+                <span className="text-green-600">✓</span> Ingen bindningstid
+              </p>
             </div>
 
             {/* Login Screenshot */}
