@@ -51,9 +51,14 @@ export default function Home() {
                   Kom igång – 14 dagar utan risk
                 </a>
               </div>
-              <p className="mt-4 text-sm text-gray-500 flex items-center justify-center lg:justify-start gap-1">
-                <span className="text-green-600">✓</span> Ingen bindningstid
-              </p>
+              <div className="mt-4 flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-sm text-gray-500">
+                <span className="flex items-center gap-1">
+                  <span className="text-green-600">✓</span> Ingen bindningstid
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="text-green-600">✓</span> Testa gratis utan betalkort
+                </span>
+              </div>
             </div>
 
             {/* Login Screenshot */}
